@@ -1,0 +1,2862 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NAVI - Relationship Messaging</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-thiago: #3498db;
+            --primary-daniela: #e74c3c;
+            --space-casa: #e67e22;
+            --space-filhos: #9b59b6;
+            --space-trabalho: #3498db;
+            --space-viagem: #1abc9c;
+            --space-financas: #f1c40f;
+            --space-nos: #e91e63;
+            --space-lazer: #2ecc71;
+            --space-saude: #e74c3c;
+            --bg-primary: #f5f5f5;
+            --bg-white: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border-color: #e0e0e0;
+            --nav-height: 60px;
+            --header-height: 56px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 375px;
+            margin: 0 auto;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background: var(--bg-white);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 375px;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-title .logo {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--primary-thiago), var(--space-nos));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* Main content area */
+        .main-content {
+            margin-top: var(--header-height);
+            margin-bottom: var(--nav-height);
+            height: calc(100vh - var(--header-height) - var(--nav-height));
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        /* Views */
+        .view {
+            display: none;
+            padding: 16px;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 375px;
+            height: var(--nav-height);
+            background: var(--bg-white);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+
+        .nav-item.active {
+            color: var(--primary-thiago);
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .nav-item span {
+            font-size: 20px;
+            pointer-events: none;
+        }
+
+        .nav-item small {
+            font-size: 10px;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        /* Stream View Styles */
+        .message-group {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .message-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .topic-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .topic-badge.casa { background: var(--space-casa); }
+        .topic-badge.filhos { background: var(--space-filhos); }
+        .topic-badge.trabalho { background: var(--space-trabalho); }
+        .topic-badge.viagem { background: var(--space-viagem); }
+        .topic-badge.financas { background: var(--space-financas); color: #333; }
+        .topic-badge.nos { background: var(--space-nos); }
+        .topic-badge.lazer { background: var(--space-lazer); }
+        .topic-badge.saude { background: var(--space-saude); }
+
+        .status-chip {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
+        .status-chip.pending { background: #fff3cd; color: #856404; }
+        .status-chip.done { background: #d4edda; color: #155724; }
+        .status-chip.urgent { background: #f8d7da; color: #721c24; }
+        .status-chip.scheduled { background: #cce5ff; color: #004085; }
+
+        .message {
+            padding: 6px 0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            min-width: 40px;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            font-size: 12px;
+            min-width: 16px;
+        }
+
+        .message-sender.daniela { color: var(--primary-daniela); }
+        .message-sender.thiago { color: var(--primary-thiago); }
+
+        .message-text {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        /* Spaces View Styles */
+        .spaces-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .space-card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .space-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .space-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .space-card.casa .space-icon { background: rgba(230, 126, 34, 0.15); }
+        .space-card.filhos .space-icon { background: rgba(155, 89, 182, 0.15); }
+        .space-card.trabalho .space-icon { background: rgba(52, 152, 219, 0.15); }
+        .space-card.viagem .space-icon { background: rgba(26, 188, 156, 0.15); }
+        .space-card.financas .space-icon { background: rgba(241, 196, 15, 0.15); }
+        .space-card.nos .space-icon { background: rgba(233, 30, 99, 0.15); }
+        .space-card.lazer .space-icon { background: rgba(46, 204, 113, 0.15); }
+        .space-card.saude .space-icon { background: rgba(231, 76, 60, 0.15); }
+
+        .space-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .space-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .space-pending {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-daniela);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+        }
+
+        .space-card {
+            position: relative;
+        }
+
+        .ai-banner {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            color: white;
+        }
+
+        .ai-banner-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-banner-text {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Space Detail View */
+        .space-detail {
+            display: none;
+        }
+
+        .space-detail.active {
+            display: block;
+        }
+
+        .space-detail-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-white);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-primary);
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .space-detail-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .space-detail-title {
+            flex: 1;
+        }
+
+        .space-detail-title h2 {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .space-detail-title small {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .pending-section {
+            background: #fff3cd;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .pending-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .pending-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .pending-item:last-child {
+            border-bottom: none;
+        }
+
+        .pending-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #856404;
+            cursor: pointer;
+        }
+
+        .pending-checkbox.checked {
+            background: #155724;
+            border-color: #155724;
+        }
+
+        .pending-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .thread-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .thread-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .thread-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Actions View Styles */
+        .actions-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        /* Task cards with swipe structure (in my-tasks-section) */
+        #my-tasks-section .task-card {
+            background: transparent;
+            padding: 0;
+            display: block;
+        }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .task-checkbox:hover {
+            border-color: var(--primary-thiago);
+        }
+
+        .task-checkbox.checked {
+            background: var(--primary-thiago);
+            border-color: var(--primary-thiago);
+            color: white;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .task-card.completed .task-title {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Pulse View Styles */
+        .pulse-score {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .score-dial {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--primary-thiago) 0deg 280deg,
+                var(--bg-primary) 280deg 360deg
+            );
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .score-dial::before {
+            content: '';
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: var(--bg-white);
+            position: absolute;
+        }
+
+        .score-value {
+            position: relative;
+            z-index: 1;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary-thiago);
+        }
+
+        .score-value small {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .score-status {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .metric-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .metric-bar {
+            height: 4px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: var(--primary-thiago);
+        }
+
+        .weekly-stats {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .weekly-stats h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .suggestion-card h4 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .suggestion-card p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .memory-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid var(--space-nos);
+        }
+
+        .memory-card h4 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .memory-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* AI View Styles */
+        .ai-section {
+            margin-bottom: 24px;
+        }
+
+        .ai-section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .ai-section-header h3 {
+            font-size: 16px;
+        }
+
+        .ai-section-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
+        .ai-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .ai-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .ai-card h4 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .ai-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .ai-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ai-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ai-btn.primary {
+            background: var(--primary-thiago);
+            color: white;
+        }
+
+        .ai-btn.secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .content-rec {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .content-rec-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .content-rec-info h4 {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .content-rec-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Compose bar */
+        .compose-bar {
+            position: fixed;
+            bottom: var(--nav-height);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 375px;
+            padding: 8px 16px;
+            background: var(--bg-white);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .compose-bar.hidden {
+            display: none;
+        }
+
+        .compose-input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .compose-input:focus {
+            border-color: var(--primary-thiago);
+        }
+
+        .compose-send {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-thiago);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .view.active {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Scrollbar */
+        .main-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .main-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        /* ========== NEW INTERACTION STYLES ========== */
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: calc(var(--nav-height) + 60px);
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            max-width: 340px;
+            width: calc(100% - 32px);
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 200;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .toast-content .checkmark {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .toast-btn {
+            padding: 6px 12px;
+            border-radius: 16px;
+            border: none;
+            background: var(--bg-primary);
+            color: var(--primary-thiago);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toast-btn:hover {
+            background: rgba(52, 152, 219, 0.15);
+        }
+
+        .toast-btn.undo {
+            color: var(--primary-daniela);
+        }
+
+        .toast-btn.undo:hover {
+            background: rgba(231, 76, 60, 0.15);
+        }
+
+        /* Space selector modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 300;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--bg-white);
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            width: 100%;
+            max-width: 375px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-primary);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .space-selector-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .space-selector-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .space-selector-item:hover {
+            background: var(--bg-primary);
+        }
+
+        .space-selector-item.selected {
+            border-color: var(--primary-thiago);
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .space-selector-item .icon {
+            font-size: 24px;
+        }
+
+        .space-selector-item .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Message group tap-to-expand */
+        .message-group {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+
+        .message-group:active {
+            transform: scale(0.98);
+        }
+
+        .message-group.expanded {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .message-group-actions {
+            display: flex;
+            gap: 8px;
+            padding-top: 12px;
+            margin-top: 12px;
+            border-top: 1px solid var(--border-color);
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .message-group.expanded .message-group-actions {
+            max-height: 60px;
+            opacity: 1;
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 20px;
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .action-btn.primary {
+            background: var(--primary-thiago);
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #2980b9;
+        }
+
+        .action-btn.secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .action-btn.secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Swipe to complete - Task cards */
+        .task-card {
+            position: relative;
+            overflow: hidden;
+            touch-action: pan-y;
+            user-select: none;
+        }
+
+        .task-card-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #27ae60;
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .task-card.swiping .task-card-bg {
+            opacity: 1;
+        }
+
+        .task-card-content {
+            position: relative;
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: transform 0.3s ease;
+            z-index: 1;
+        }
+
+        .task-card.swiping .task-card-content {
+            transition: none;
+        }
+
+        .task-card.completing .task-card-content {
+            transform: translateX(100%);
+        }
+
+        @keyframes taskSlideOut {
+            from {
+                max-height: 100px;
+                opacity: 1;
+                margin-bottom: 8px;
+            }
+            to {
+                max-height: 0;
+                opacity: 0;
+                margin-bottom: 0;
+                padding: 0;
+            }
+        }
+
+        .task-card.removed {
+            animation: taskSlideOut 0.3s ease forwards;
+        }
+
+        /* AI Card swipe */
+        .ai-card {
+            position: relative;
+            overflow: hidden;
+            touch-action: pan-y;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .ai-card.swiping {
+            transition: none;
+        }
+
+        .ai-card.dismissed {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .ai-card.saved {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        /* New message highlight */
+        @keyframes newMessagePulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+        }
+
+        .message-group.new {
+            animation: newMessagePulse 1s ease;
+        }
+
+        /* Send button animation */
+        @keyframes sendPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        .compose-send.sending {
+            animation: sendPulse 0.2s ease;
+        }
+
+        /* Compose bar with context */
+        .compose-context {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            background: var(--bg-primary);
+            border-radius: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-right: 8px;
+        }
+
+        .compose-context.show {
+            display: flex;
+        }
+
+        .compose-context .close {
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        .compose-context .close:hover {
+            opacity: 1;
+        }
+
+        /* Adjust main content for toast space */
+        .main-content.with-compose {
+            padding-bottom: 80px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-title">
+            <div class="logo">N</div>
+            <span>NAVI</span>
+        </div>
+        <div class="header-actions">
+            <button class="header-btn">🔔</button>
+            <button class="header-btn">👤</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Stream View -->
+        <div id="stream-view" class="view active" style="padding-bottom: 70px;">
+            <!-- New messages container (will be populated by JS) -->
+            <div id="new-messages-container"></div>
+
+            <!-- Urgent: Work handoff -->
+            <div class="message-group" data-space="trabalho" data-status="urgent" onclick="toggleMessageGroup(event, this)">
+                <div class="message-group-header">
+                    <span class="topic-badge trabalho">💼 Trabalho</span>
+                    <span class="status-chip urgent">🔴 Em andamento</span>
+                </div>
+                <div class="message"><span class="message-time">17:45</span><span class="message-sender daniela">D:</span><span class="message-text">Amor, a Lia resolveu olhar e comentar o relatório todo agora</span></div>
+                <div class="message"><span class="message-time">17:45</span><span class="message-sender daniela">D:</span><span class="message-text">Deadline era hoje. Não sei a que horas termina</span></div>
+                <div class="message"><span class="message-time">17:46</span><span class="message-sender thiago">T:</span><span class="message-text">Vc chega quando?</span></div>
+                <div class="message"><span class="message-time">17:47</span><span class="message-sender daniela">D:</span><span class="message-text">Não sei. Pode ser tarde</span></div>
+                <div class="message"><span class="message-time">18:31</span><span class="message-sender thiago">T:</span><span class="message-text">Tranquilo, já pedi pizza pras meninas</span></div>
+                <div class="message"><span class="message-time">18:32</span><span class="message-sender daniela">D:</span><span class="message-text">Você é o melhor ❤️</span></div>
+                <div class="message-group-actions">
+                    <button class="action-btn secondary" onclick="replyToSpace(event, 'trabalho')">💬 Responder</button>
+                </div>
+            </div>
+
+            <!-- Pending: DARF Payment -->
+            <div class="message-group" data-space="casa" data-status="pending" onclick="toggleMessageGroup(event, this)">
+                <div class="message-group-header">
+                    <span class="topic-badge casa">🏠 Casa</span>
+                    <span class="status-chip pending">⏳ Pendente</span>
+                </div>
+                <div class="message"><span class="message-time">10:01</span><span class="message-sender daniela">D:</span><span class="message-text">Tem que pagar um DARF hoje!</span></div>
+                <div class="message"><span class="message-time">10:02</span><span class="message-sender thiago">T:</span><span class="message-text">Ok</span></div>
+                <div class="message"><span class="message-time">10:03</span><span class="message-sender daniela">D:</span><span class="message-text">O valor é R$1.247,00</span></div>
+                <div class="message"><span class="message-time">10:03</span><span class="message-sender daniela">D:</span><span class="message-text">Vou te mandar o código de barras</span></div>
+                <div class="message"><span class="message-time">10:04</span><span class="message-sender daniela">D:</span><span class="message-text">[📷 boleto]</span></div>
+                <div class="message"><span class="message-time">10:15</span><span class="message-sender thiago">T:</span><span class="message-text">👍</span></div>
+                <div class="message-group-actions">
+                    <button class="action-btn primary" onclick="markGroupAsDone(event, this)">✓ Marcar como feito</button>
+                    <button class="action-btn secondary" onclick="replyToSpace(event, 'casa')">💬 Responder</button>
+                </div>
+            </div>
+
+            <!-- Scheduled: School uniform -->
+            <div class="message-group" data-space="filhos" data-status="scheduled" onclick="toggleMessageGroup(event, this)">
+                <div class="message-group-header">
+                    <span class="topic-badge filhos">👨‍👩‍👧 Filhos</span>
+                    <span class="status-chip scheduled">📅 Amanhã</span>
+                </div>
+                <div class="message"><span class="message-time">10:30</span><span class="message-sender daniela">D:</span><span class="message-text">Amanhã de manhã tem que colocar um uniforme extra na mochila da Clarinha</span></div>
+                <div class="message"><span class="message-time">10:30</span><span class="message-sender daniela">D:</span><span class="message-text">Blusa e calça laranja ou bermuda</span></div>
+                <div class="message"><span class="message-time">10:31</span><span class="message-sender daniela">D:</span><span class="message-text">Tem que levar a sacola parda que está ao lado da mochila com itens da natureza</span></div>
+                <div class="message"><span class="message-time">10:35</span><span class="message-sender thiago">T:</span><span class="message-text">Ok, vou preparar hoje de noite</span></div>
+                <div class="message"><span class="message-time">10:36</span><span class="message-sender daniela">D:</span><span class="message-text">Obrigada amor</span></div>
+                <div class="message-group-actions">
+                    <button class="action-btn primary" onclick="markGroupAsDone(event, this)">✓ Marcar como feito</button>
+                    <button class="action-btn secondary" onclick="replyToSpace(event, 'filhos')">💬 Responder</button>
+                </div>
+            </div>
+
+            <!-- Connection: Love message -->
+            <div class="message-group" data-space="nos" data-status="connection" onclick="toggleMessageGroup(event, this)">
+                <div class="message-group-header">
+                    <span class="topic-badge nos">❤️ Nós</span>
+                    <span class="status-chip">💬 Conexão</span>
+                </div>
+                <div class="message"><span class="message-time">10:15</span><span class="message-sender daniela">D:</span><span class="message-text">Te amo ❤️</span></div>
+                <div class="message"><span class="message-time">10:18</span><span class="message-sender thiago">T:</span><span class="message-text">Eu mais!</span></div>
+                <div class="message"><span class="message-time">10:19</span><span class="message-sender thiago">T:</span><span class="message-text">Tô com saudades</span></div>
+                <div class="message"><span class="message-time">10:20</span><span class="message-sender daniela">D:</span><span class="message-text">Eu também...</span></div>
+                <div class="message"><span class="message-time">10:22</span><span class="message-sender thiago">T:</span><span class="message-text">Com certeza 😘</span></div>
+                <div class="message-group-actions">
+                    <button class="action-btn secondary" onclick="replyToSpace(event, 'nos')">💬 Responder</button>
+                </div>
+            </div>
+
+            <!-- Scheduled: Netflix -->
+            <div class="message-group" data-space="lazer" data-status="scheduled" onclick="toggleMessageGroup(event, this)">
+                <div class="message-group-header">
+                    <span class="topic-badge lazer">🎉 Lazer</span>
+                    <span class="status-chip scheduled">📅 Hoje à noite</span>
+                </div>
+                <div class="message"><span class="message-time">20:00</span><span class="message-sender thiago">T:</span><span class="message-text">Viu que lançou a série do Senna?</span></div>
+                <div class="message"><span class="message-time">20:02</span><span class="message-sender daniela">D:</span><span class="message-text">Vi! Tá com boas críticas</span></div>
+                <div class="message"><span class="message-time">20:03</span><span class="message-sender daniela">D:</span><span class="message-text">Vamos assistir hoje?</span></div>
+                <div class="message"><span class="message-time">20:04</span><span class="message-sender thiago">T:</span><span class="message-text">Bora! 🍿</span></div>
+                <div class="message"><span class="message-time">20:05</span><span class="message-sender daniela">D:</span><span class="message-text">Coloco as meninas pra dormir e te encontro no sofá</span></div>
+                <div class="message"><span class="message-time">20:06</span><span class="message-sender thiago">T:</span><span class="message-text">Combinado ❤️</span></div>
+                <div class="message-group-actions">
+                    <button class="action-btn primary" onclick="markGroupAsDone(event, this)">✓ Marcar como feito</button>
+                    <button class="action-btn secondary" onclick="replyToSpace(event, 'lazer')">💬 Responder</button>
+                </div>
+            </div>
+
+            <!-- Scheduled: Health appointment -->
+            <div class="message-group" data-space="saude" data-status="scheduled" onclick="toggleMessageGroup(event, this)">
+                <div class="message-group-header">
+                    <span class="topic-badge saude">🏥 Saúde</span>
+                    <span class="status-chip scheduled">📅 Amanhã 9:30</span>
+                </div>
+                <div class="message"><span class="message-time">14:00</span><span class="message-sender daniela">D:</span><span class="message-text">Minha consulta é amanhã 10h</span></div>
+                <div class="message"><span class="message-time">14:02</span><span class="message-sender thiago">T:</span><span class="message-text">Quer que eu te leve?</span></div>
+                <div class="message"><span class="message-time">14:03</span><span class="message-sender daniela">D:</span><span class="message-text">Seria ótimo, obrigada</span></div>
+                <div class="message"><span class="message-time">14:05</span><span class="message-sender thiago">T:</span><span class="message-text">Perfeito. Que horas saímos?</span></div>
+                <div class="message"><span class="message-time">14:06</span><span class="message-sender daniela">D:</span><span class="message-text">9:30 tá bom?</span></div>
+                <div class="message"><span class="message-time">14:07</span><span class="message-sender thiago">T:</span><span class="message-text">Combinado ✓</span></div>
+                <div class="message-group-actions">
+                    <button class="action-btn primary" onclick="markGroupAsDone(event, this)">✓ Marcar como feito</button>
+                    <button class="action-btn secondary" onclick="replyToSpace(event, 'saude')">💬 Responder</button>
+                </div>
+            </div>
+
+            <!-- Done: Transfer -->
+            <div class="message-group" data-space="financas" data-status="done" onclick="toggleMessageGroup(event, this)">
+                <div class="message-group-header">
+                    <span class="topic-badge financas">💰 Finanças</span>
+                    <span class="status-chip done">✓ Feito</span>
+                </div>
+                <div class="message"><span class="message-time">10:00</span><span class="message-sender daniela">D:</span><span class="message-text">Amor, a transferência de 700 pra Maria precisa ser feita hoje</span></div>
+                <div class="message"><span class="message-time">10:01</span><span class="message-sender thiago">T:</span><span class="message-text">Ok, faço agora</span></div>
+                <div class="message"><span class="message-time">10:06</span><span class="message-sender daniela">D:</span><span class="message-text">Bradesco - Ag 1234 Conta 56789-0</span></div>
+                <div class="message"><span class="message-time">10:10</span><span class="message-sender thiago">T:</span><span class="message-text">Feito ✓</span></div>
+                <div class="message"><span class="message-time">10:11</span><span class="message-sender daniela">D:</span><span class="message-text">Obrigada! ❤️</span></div>
+                <div class="message-group-actions">
+                    <button class="action-btn secondary" onclick="replyToSpace(event, 'financas')">💬 Responder</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spaces View -->
+        <div id="spaces-view" class="view">
+            <div class="spaces-grid">
+                <div class="space-card casa" onclick="openSpaceDetail('casa')">
+                    <span class="space-pending">2</span>
+                    <div class="space-icon">🏠</div>
+                    <div class="space-name">Casa</div>
+                    <div class="space-status">2 pendentes</div>
+                </div>
+                <div class="space-card filhos" onclick="openSpaceDetail('filhos')">
+                    <span class="space-pending">2</span>
+                    <div class="space-icon">👨‍👩‍👧</div>
+                    <div class="space-name">Filhos</div>
+                    <div class="space-status">2 pendentes</div>
+                </div>
+                <div class="space-card trabalho" onclick="openSpaceDetail('trabalho')">
+                    <div class="space-icon">💼</div>
+                    <div class="space-name">Trabalho</div>
+                    <div class="space-status">Em andamento</div>
+                </div>
+                <div class="space-card viagem" onclick="openSpaceDetail('viagem')">
+                    <span class="space-pending">1</span>
+                    <div class="space-icon">✈️</div>
+                    <div class="space-name">Viagem</div>
+                    <div class="space-status">1 decisão pendente</div>
+                </div>
+                <div class="space-card financas" onclick="openSpaceDetail('financas')">
+                    <span class="space-pending">1</span>
+                    <div class="space-icon">💰</div>
+                    <div class="space-name">Finanças</div>
+                    <div class="space-status">1 pendente</div>
+                </div>
+                <div class="space-card nos" onclick="openSpaceDetail('nos')">
+                    <div class="space-icon">❤️</div>
+                    <div class="space-name">Nós</div>
+                    <div class="space-status">Sáb 20h - Jantar</div>
+                </div>
+                <div class="space-card lazer" onclick="openSpaceDetail('lazer')">
+                    <div class="space-icon">🎉</div>
+                    <div class="space-name">Lazer</div>
+                    <div class="space-status">Série hoje à noite</div>
+                </div>
+                <div class="space-card saude" onclick="openSpaceDetail('saude')">
+                    <div class="space-icon">🏥</div>
+                    <div class="space-name">Saúde</div>
+                    <div class="space-status">Consulta amanhã</div>
+                </div>
+            </div>
+
+            <div class="ai-banner">
+                <div class="ai-banner-title">
+                    <span>✨</span>
+                    <span>Sugestão da NAVI</span>
+                </div>
+                <div class="ai-banner-text">
+                    Vocês têm 3 tarefas pendentes para hoje. Considere priorizar o pagamento do DARF que vence hoje.
+                </div>
+            </div>
+        </div>
+
+        <!-- Space Detail View -->
+        <div id="space-detail-view" class="view">
+            <!-- Content will be injected by JavaScript -->
+        </div>
+
+        <!-- Actions View -->
+        <div id="actions-view" class="view">
+            <div class="actions-section" id="my-tasks-section">
+                <div class="section-title">📋 Minhas Tarefas</div>
+
+                <div class="task-card" data-task="darf" data-space="casa">
+                    <div class="task-card-bg">✓ Feito</div>
+                    <div class="task-card-content">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">Pagar DARF - R$1.247,00</div>
+                            <div class="task-meta">
+                                <span class="topic-badge casa" style="font-size:10px;padding:2px 6px;">🏠 Casa</span>
+                                <span>Vence hoje</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-card" data-task="mercado" data-space="casa">
+                    <div class="task-card-bg">✓ Feito</div>
+                    <div class="task-card-content">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">Passar no mercado</div>
+                            <div class="task-meta">
+                                <span class="topic-badge casa" style="font-size:10px;padding:2px 6px;">🏠 Casa</span>
+                                <span>Leite, pão, queijo, iogurte Danone</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-card" data-task="uniforme" data-space="filhos">
+                    <div class="task-card-bg">✓ Feito</div>
+                    <div class="task-card-content">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">Preparar mochila da Clarinha</div>
+                            <div class="task-meta">
+                                <span class="topic-badge filhos" style="font-size:10px;padding:2px 6px;">👨‍👩‍👧 Filhos</span>
+                                <span>Para amanhã de manhã</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-card" data-task="pediatra" data-space="filhos">
+                    <div class="task-card-bg">✓ Feito</div>
+                    <div class="task-card-content">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">Levar Carol na Dra. Patricia</div>
+                            <div class="task-meta">
+                                <span class="topic-badge filhos" style="font-size:10px;padding:2px 6px;">👨‍👩‍👧 Filhos</span>
+                                <span>Qua 9h - Perguntar sobre vacina</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-card" data-task="consulta" data-space="saude">
+                    <div class="task-card-bg">✓ Feito</div>
+                    <div class="task-card-content">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">Levar Daniela na consulta</div>
+                            <div class="task-meta">
+                                <span class="topic-badge saude" style="font-size:10px;padding:2px 6px;">🏥 Saúde</span>
+                                <span>Amanhã 9:30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions-section">
+                <div class="section-title">⏳ Aguardando Resposta</div>
+
+                <div class="task-card">
+                    <div class="task-checkbox" style="border-color: var(--space-viagem);"></div>
+                    <div class="task-content">
+                        <div class="task-title">Decidir sobre passagem Lisboa</div>
+                        <div class="task-meta">
+                            <span class="topic-badge viagem" style="font-size:10px;padding:2px 6px;">✈️ Viagem</span>
+                            <span>R$2.400 ida e volta - Março</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-card">
+                    <div class="task-checkbox" style="border-color: var(--space-financas);"></div>
+                    <div class="task-content">
+                        <div class="task-title">Discutir investimento Tesouro</div>
+                        <div class="task-meta">
+                            <span class="topic-badge financas" style="font-size:10px;padding:2px 6px;">💰 Finanças</span>
+                            <span>Conversar no fim de semana</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions-section">
+                <div class="section-title">✓ Concluídos Recentemente</div>
+
+                <div class="task-card completed">
+                    <div class="task-checkbox checked">✓</div>
+                    <div class="task-content">
+                        <div class="task-title">Transferir R$700 para Maria</div>
+                        <div class="task-meta">
+                            <span class="topic-badge financas" style="font-size:10px;padding:2px 6px;">💰 Finanças</span>
+                            <span>Bradesco - Concluído hoje</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-card completed">
+                    <div class="task-checkbox checked">✓</div>
+                    <div class="task-content">
+                        <div class="task-title">Buscar Clarinha e levar ao clube</div>
+                        <div class="task-meta">
+                            <span class="topic-badge filhos" style="font-size:10px;padding:2px 6px;">👨‍👩‍👧 Filhos</span>
+                            <span>Concluído ontem</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-card completed">
+                    <div class="task-checkbox checked">✓</div>
+                    <div class="task-content">
+                        <div class="task-title">Trocar gás</div>
+                        <div class="task-meta">
+                            <span class="topic-badge casa" style="font-size:10px;padding:2px 6px;">🏠 Casa</span>
+                            <span>Anotar no quadro branco da próxima vez</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pulse View -->
+        <div id="pulse-view" class="view">
+            <div class="pulse-score">
+                <div class="score-dial">
+                    <div class="score-value">7.8<small>/10</small></div>
+                </div>
+                <div class="score-label">Saúde do Relacionamento</div>
+                <div class="score-status">Saudável</div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Simetria de Respostas</div>
+                    <div class="metric-value">85%</div>
+                    <div class="metric-bar"><div class="metric-bar-fill" style="width:85%;background:var(--space-lazer);"></div></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Diversidade de Tópicos</div>
+                    <div class="metric-value">8/8</div>
+                    <div class="metric-bar"><div class="metric-bar-fill" style="width:100%;background:var(--space-filhos);"></div></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Tempo de Resposta</div>
+                    <div class="metric-value">5 min</div>
+                    <div class="metric-bar"><div class="metric-bar-fill" style="width:90%;background:var(--primary-thiago);"></div></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Balanço de Carga</div>
+                    <div class="metric-value">60/40</div>
+                    <div class="metric-bar"><div class="metric-bar-fill" style="width:70%;background:var(--space-nos);"></div></div>
+                </div>
+            </div>
+
+            <div class="weekly-stats">
+                <h3>📊 Esta Semana</h3>
+                <div class="stat-row">
+                    <span>Mensagens trocadas</span>
+                    <strong>247</strong>
+                </div>
+                <div class="stat-row">
+                    <span>Tarefas concluídas</span>
+                    <strong>12</strong>
+                </div>
+                <div class="stat-row">
+                    <span>Momentos de conexão</span>
+                    <strong>8</strong>
+                </div>
+                <div class="stat-row">
+                    <span>Tópico mais ativo</span>
+                    <strong>👨‍👩‍👧 Filhos</strong>
+                </div>
+            </div>
+
+            <div class="suggestion-card">
+                <h4>💡 Sugestão da Semana</h4>
+                <p>Vocês têm tido menos momentos de conexão no espaço "Nós" esta semana. Que tal aproveitar o jantar de sábado para se reconectar?</p>
+            </div>
+
+            <div class="memory-card">
+                <h4>💭 Memória do Dia</h4>
+                <p>"Você é o melhor ❤️" - Daniela, sobre quando você pediu pizza pras meninas enquanto ela trabalhava até tarde.</p>
+            </div>
+        </div>
+
+        <!-- AI View -->
+        <div id="ai-view" class="view">
+            <div class="ai-section">
+                <div class="ai-section-header">
+                    <h3>🔒 Para Você (Privado)</h3>
+                    <span class="ai-section-badge">Só você vê</span>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-icon">💡</div>
+                    <h4>Dica de Comunicação</h4>
+                    <p>Quando a Daniela pede algo urgente (como o DARF), confirmar com "Ok" é eficiente, mas às vezes um "Pode deixar, amor!" transmite mais cuidado.</p>
+                    <div class="ai-card-actions">
+                        <button class="ai-btn primary">Entendi</button>
+                        <button class="ai-btn secondary">Ver mais</button>
+                    </div>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-icon">📈</div>
+                    <h4>Padrão Identificado</h4>
+                    <p>Você tende a responder mais rápido em mensagens sobre trabalho (2 min) do que em mensagens pessoais (8 min). Isso é normal, mas vale observar.</p>
+                    <div class="ai-card-actions">
+                        <button class="ai-btn primary">Refletir</button>
+                        <button class="ai-btn secondary">Ignorar</button>
+                    </div>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-icon">🎯</div>
+                    <h4>Lembrete Gentil</h4>
+                    <p>Lembra de avisar quando trocar o gás! A Daniela sugeriu usar o quadro branco da cozinha. Pequenos ajustes evitam atritos.</p>
+                    <div class="ai-card-actions">
+                        <button class="ai-btn primary">Anotar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-section">
+                <div class="ai-section-header">
+                    <h3>💕 Para Vocês Dois (Compartilhado)</h3>
+                    <span class="ai-section-badge">Visível para ambos</span>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-icon">🌟</div>
+                    <h4>Momento Especial da Semana</h4>
+                    <p>A forma como vocês lidaram com o stress do relatório foi linda. Thiago cuidou das meninas, Daniela reconheceu com carinho. Parceria em ação!</p>
+                    <div class="ai-card-actions">
+                        <button class="ai-btn primary">Salvar memória</button>
+                    </div>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-icon">📅</div>
+                    <h4>Sugestão de Programa</h4>
+                    <p>Baseado nas conversas, vocês adoram o Ibirapuera. Previsão de sol no próximo domingo - perfeito para outro piquenique em família!</p>
+                    <div class="ai-card-actions">
+                        <button class="ai-btn primary">Agendar</button>
+                        <button class="ai-btn secondary">Outra ideia</button>
+                    </div>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-icon">💬</div>
+                    <h4>Conversa Pendente</h4>
+                    <p>Vocês planejaram discutir o investimento no Tesouro no fim de semana. Criar um momento tranquilo para isso pode ajudar na decisão.</p>
+                    <div class="ai-card-actions">
+                        <button class="ai-btn primary">Lembrar sábado</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-section">
+                <div class="ai-section-header">
+                    <h3>📚 Recomendações</h3>
+                </div>
+
+                <div class="content-rec">
+                    <div class="content-rec-thumb">🎬</div>
+                    <div class="content-rec-info">
+                        <h4>Série: Senna</h4>
+                        <p>Vocês já planejaram assistir hoje! Aproveitem 🍿</p>
+                    </div>
+                </div>
+
+                <div class="content-rec">
+                    <div class="content-rec-thumb">🍽️</div>
+                    <div class="content-rec-info">
+                        <h4>Restaurante Mexicano</h4>
+                        <p>4.7 estrelas - Salvo para semana que vem</p>
+                    </div>
+                </div>
+
+                <div class="content-rec">
+                    <div class="content-rec-thumb">✈️</div>
+                    <div class="content-rec-info">
+                        <h4>Puglia, Itália</h4>
+                        <p>Ideia salva para próxima viagem em família</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Compose Bar (only visible on Stream) -->
+    <div id="compose-bar" class="compose-bar">
+        <div id="compose-context" class="compose-context">
+            <span class="space-icon"></span>
+            <span class="space-name"></span>
+            <span class="close" onclick="clearComposeContext()">&times;</span>
+        </div>
+        <input type="text" id="compose-input" class="compose-input" placeholder="Mensagem...">
+        <button id="compose-send" class="compose-send">➤</button>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <span class="checkmark">✓</span>
+            <span id="toast-message">Enviado para 🏠 Casa</span>
+        </div>
+        <button id="toast-btn" class="toast-btn">Mudar</button>
+    </div>
+
+    <!-- Space Selector Modal -->
+    <div id="space-modal" class="modal-overlay" onclick="closeSpaceModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Escolher espaço</h3>
+                <button class="modal-close" onclick="closeSpaceModal()">&times;</button>
+            </div>
+            <div class="space-selector-grid">
+                <div class="space-selector-item" data-space="casa" onclick="selectSpace('casa')">
+                    <span class="icon">🏠</span>
+                    <span class="label">Casa</span>
+                </div>
+                <div class="space-selector-item" data-space="filhos" onclick="selectSpace('filhos')">
+                    <span class="icon">👨‍👩‍👧</span>
+                    <span class="label">Filhos</span>
+                </div>
+                <div class="space-selector-item" data-space="trabalho" onclick="selectSpace('trabalho')">
+                    <span class="icon">💼</span>
+                    <span class="label">Trabalho</span>
+                </div>
+                <div class="space-selector-item" data-space="viagem" onclick="selectSpace('viagem')">
+                    <span class="icon">✈️</span>
+                    <span class="label">Viagem</span>
+                </div>
+                <div class="space-selector-item" data-space="financas" onclick="selectSpace('financas')">
+                    <span class="icon">💰</span>
+                    <span class="label">Finanças</span>
+                </div>
+                <div class="space-selector-item" data-space="nos" onclick="selectSpace('nos')">
+                    <span class="icon">❤️</span>
+                    <span class="label">Nós</span>
+                </div>
+                <div class="space-selector-item" data-space="lazer" onclick="selectSpace('lazer')">
+                    <span class="icon">🎉</span>
+                    <span class="label">Lazer</span>
+                </div>
+                <div class="space-selector-item" data-space="saude" onclick="selectSpace('saude')">
+                    <span class="icon">🏥</span>
+                    <span class="label">Saúde</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchView('stream', this)">
+            <span>💬</span>
+            <small>Stream</small>
+        </div>
+        <div class="nav-item" onclick="switchView('spaces', this)">
+            <span>📂</span>
+            <small>Espaços</small>
+        </div>
+        <div class="nav-item" onclick="switchView('actions', this)">
+            <span>✓</span>
+            <small>Ações</small>
+        </div>
+        <div class="nav-item" onclick="switchView('pulse', this)">
+            <span>💗</span>
+            <small>Pulse</small>
+        </div>
+        <div class="nav-item" onclick="switchView('ai', this)">
+            <span>✨</span>
+            <small>AI</small>
+        </div>
+    </nav>
+
+    <script>
+        // ========== SPACE DATA ==========
+        const spaceConfig = {
+            casa: { icon: '🏠', name: 'Casa', color: '#e67e22' },
+            filhos: { icon: '👨‍👩‍👧', name: 'Filhos', color: '#9b59b6' },
+            trabalho: { icon: '💼', name: 'Trabalho', color: '#3498db' },
+            viagem: { icon: '✈️', name: 'Viagem', color: '#1abc9c' },
+            financas: { icon: '💰', name: 'Finanças', color: '#f1c40f' },
+            nos: { icon: '❤️', name: 'Nós', color: '#e91e63' },
+            lazer: { icon: '🎉', name: 'Lazer', color: '#2ecc71' },
+            saude: { icon: '🏥', name: 'Saúde', color: '#e74c3c' }
+        };
+
+        // AI Space detection keywords
+        const spaceKeywords = {
+            casa: ['casa', 'mercado', 'comprar', 'pagar', 'conta', 'luz', 'água', 'gás', 'limpeza', 'arrumação', 'condomínio', 'darf', 'boleto'],
+            filhos: ['filhos', 'clara', 'clarinha', 'carol', 'escola', 'mochila', 'uniforme', 'pediatra', 'criança', 'meninas', 'filha'],
+            trabalho: ['trabalho', 'reunião', 'relatório', 'deadline', 'escritório', 'chefe', 'projeto', 'lia', 'board'],
+            viagem: ['viagem', 'viajar', 'passagem', 'hotel', 'lisboa', 'florença', 'itália', 'avião', 'férias'],
+            financas: ['dinheiro', 'transferência', 'banco', 'investimento', 'tesouro', 'poupança', 'bradesco', 'itaú', 'r$'],
+            nos: ['te amo', 'amor', 'saudade', 'saudades', 'jantar', 'romântico', 'nós dois', 'casal', '❤️', '😘'],
+            lazer: ['filme', 'série', 'netflix', 'cinema', 'restaurante', 'parque', 'ibirapuera', 'senna', 'assistir', 'piquenique'],
+            saude: ['médico', 'consulta', 'doutor', 'doutora', 'hospital', 'remédio', 'doença', 'vacina', 'caminhada', 'academia']
+        };
+
+        // ========== STATE ==========
+        let currentView = 'stream';
+        let currentSpace = null;
+        let lastSentMessage = null;
+        let lastCompletedTask = null;
+        let lastCompletedGroup = null;
+        let toastTimeout = null;
+        let composeSpaceContext = null;
+
+        // Space detail data
+        const spaceDetails = {
+            casa: {
+                name: 'Casa',
+                icon: '🏠',
+                color: '#e67e22',
+                pending: [
+                    { title: 'Pagar DARF R$1.247,00', due: 'Hoje' },
+                    { title: 'Ir ao mercado', due: 'Hoje' }
+                ],
+                threads: [
+                    {
+                        title: 'Pagamento DARF',
+                        status: '⏳ Pendente',
+                        statusClass: 'pending',
+                        messages: [
+                            { time: '10:01', sender: 'D', text: 'Tem que pagar um DARF hoje!' },
+                            { time: '10:02', sender: 'T', text: 'Ok' },
+                            { time: '10:03', sender: 'D', text: 'O valor é R$1.247,00' },
+                            { time: '10:04', sender: 'D', text: '[📷 boleto]' },
+                            { time: '10:15', sender: 'T', text: '👍' }
+                        ]
+                    },
+                    {
+                        title: 'Troca de Gás',
+                        status: '✓ Feito',
+                        statusClass: 'done',
+                        messages: [
+                            { time: '09:15', sender: 'D', text: 'Amor, você trocou o gás este final de semana?' },
+                            { time: '09:18', sender: 'T', text: 'Eu troquei quando sua mãe estava aqui.' },
+                            { time: '09:20', sender: 'D', text: 'Nossa amor. Tem que avisar! Se não vai acabar no meio do banho!' },
+                            { time: '09:21', sender: 'T', text: 'Desculpa. Qual melhor forma de avisar?' },
+                            { time: '09:23', sender: 'D', text: 'Escrever no quadro branco da cozinha' },
+                            { time: '09:24', sender: 'T', text: 'Ok, vou fazer isso da próxima vez' }
+                        ]
+                    },
+                    {
+                        title: 'Compras no Mercado',
+                        status: '⏳ Pendente',
+                        statusClass: 'pending',
+                        messages: [
+                            { time: '11:45', sender: 'D', text: 'Amor, passa no mercado?' },
+                            { time: '11:46', sender: 'T', text: 'Posso sim. O que precisa?' },
+                            { time: '11:47', sender: 'D', text: 'Leite, pão, queijo' },
+                            { time: '11:47', sender: 'D', text: 'E vê se tem aquele iogurte que a Clara gosta' },
+                            { time: '11:48', sender: 'T', text: 'Qual marca?' },
+                            { time: '11:49', sender: 'D', text: 'Danone morango, o potinho pequeno' },
+                            { time: '11:50', sender: 'T', text: 'Ok' }
+                        ]
+                    }
+                ]
+            },
+            filhos: {
+                name: 'Filhos',
+                icon: '👨‍👩‍👧',
+                color: '#9b59b6',
+                pending: [
+                    { title: 'Uniforme extra na mochila', due: 'Amanhã' },
+                    { title: 'Consulta Dra. Patricia', due: 'Qua 9h' }
+                ],
+                threads: [
+                    {
+                        title: 'Uniforme Escolar',
+                        status: '📅 Amanhã',
+                        statusClass: 'scheduled',
+                        messages: [
+                            { time: '10:30', sender: 'D', text: 'Amanhã de manhã tem que colocar um uniforme extra na mochila da Clarinha' },
+                            { time: '10:30', sender: 'D', text: 'Blusa e calça laranja ou bermuda' },
+                            { time: '10:31', sender: 'D', text: 'Tem que levar a sacola parda que está ao lado da mochila com itens da natureza' },
+                            { time: '10:35', sender: 'T', text: 'Ok, vou preparar hoje de noite' },
+                            { time: '10:36', sender: 'D', text: 'Obrigada amor' }
+                        ]
+                    },
+                    {
+                        title: 'Consulta Pediatra',
+                        status: '📅 Qua 9h',
+                        statusClass: 'scheduled',
+                        messages: [
+                            { time: '14:00', sender: 'D', text: 'Lembra da consulta da Carol amanhã' },
+                            { time: '14:01', sender: 'T', text: 'Que horas?' },
+                            { time: '14:02', sender: 'D', text: '9h com a Dra. Patricia' },
+                            { time: '14:02', sender: 'D', text: 'Você leva ou eu levo?' },
+                            { time: '14:05', sender: 'T', text: 'Posso levar. Tenho reunião só às 11h' },
+                            { time: '14:06', sender: 'D', text: 'Perfeito! Lembra de perguntar sobre a vacina' },
+                            { time: '14:07', sender: 'T', text: 'Pode deixar' }
+                        ]
+                    },
+                    {
+                        title: 'Buscar na Escola',
+                        status: '✓ Feito',
+                        statusClass: 'done',
+                        messages: [
+                            { time: '15:30', sender: 'D', text: 'Você busca a Clarinha ou quer que eu busque?' },
+                            { time: '15:32', sender: 'T', text: 'Tô sim' },
+                            { time: '15:33', sender: 'D', text: 'A mãe da Manu mandou msg. Elas devem ir ao clube' },
+                            { time: '15:34', sender: 'D', text: 'Você vai pro trabalho a que horas? Poderia deixar ela e Débora lá?' },
+                            { time: '15:35', sender: 'T', text: 'Ok' },
+                            { time: '15:40', sender: 'T', text: 'Peguei a Clara, estamos indo pro clube' },
+                            { time: '15:41', sender: 'D', text: '❤️' }
+                        ]
+                    }
+                ]
+            },
+            trabalho: {
+                name: 'Trabalho',
+                icon: '💼',
+                color: '#3498db',
+                pending: [],
+                threads: [
+                    {
+                        title: 'Reunião com Lia',
+                        status: '🔴 Em andamento',
+                        statusClass: 'urgent',
+                        messages: [
+                            { time: '17:45', sender: 'D', text: 'Amor, a Lia resolveu olhar e comentar o relatório todo agora' },
+                            { time: '17:45', sender: 'D', text: 'Deadline era hoje. Não sei a que horas termina' },
+                            { time: '17:46', sender: 'T', text: 'Vc chega quando?' },
+                            { time: '17:47', sender: 'D', text: 'Não sei. Pode ser tarde' },
+                            { time: '17:48', sender: 'T', text: 'Ok. Força!' },
+                            { time: '18:30', sender: 'D', text: 'Ainda aqui...' },
+                            { time: '18:31', sender: 'T', text: 'Tranquilo, já pedi pizza pras meninas' },
+                            { time: '18:32', sender: 'D', text: 'Você é o melhor ❤️' }
+                        ]
+                    },
+                    {
+                        title: 'Reunião do Board',
+                        status: '✓ Info',
+                        statusClass: 'done',
+                        messages: [
+                            { time: '19:00', sender: 'T', text: 'Foi bem, mas as dúvidas do Board assustam' },
+                            { time: '19:01', sender: 'T', text: 'Sinal que realmente temos um negócio complexo' },
+                            { time: '19:05', sender: 'D', text: 'Imagino! Mas você foi muito bem' },
+                            { time: '19:06', sender: 'D', text: 'Lembra que no começo era muito pior' },
+                            { time: '19:07', sender: 'T', text: 'Verdade 😅' },
+                            { time: '19:08', sender: 'D', text: 'Orgulho de você!' }
+                        ]
+                    },
+                    {
+                        title: 'Apoio Emocional',
+                        status: '💬 Conexão',
+                        statusClass: '',
+                        messages: [
+                            { time: '08:15', sender: 'D', text: 'Te amo e te admiro muito!' },
+                            { time: '08:16', sender: 'D', text: 'Tenho certeza que não será fácil mas as coisas vão se acertar!' },
+                            { time: '08:20', sender: 'T', text: 'Obrigado por ter mandado isso :)' },
+                            { time: '08:21', sender: 'T', text: 'Tava precisando' },
+                            { time: '08:22', sender: 'D', text: 'Sempre ❤️' }
+                        ]
+                    }
+                ]
+            },
+            viagem: {
+                name: 'Viagem',
+                icon: '✈️',
+                color: '#1abc9c',
+                pending: [
+                    { title: 'Decidir passagem Lisboa', due: 'Aguardando' }
+                ],
+                threads: [
+                    {
+                        title: 'Florença',
+                        status: '📅 Planejado',
+                        statusClass: 'scheduled',
+                        messages: [
+                            { time: '18:30', sender: 'D', text: 'Fiz reserva pra jantarmos neste restaurante às 19:30' },
+                            { time: '18:31', sender: 'D', text: 'Fica logo abaixo da Basílica di San Miniato' },
+                            { time: '18:33', sender: 'D', text: 'Tem programação de canto gregoriano às 18h' },
+                            { time: '18:35', sender: 'T', text: 'Que incrível!' },
+                            { time: '18:36', sender: 'T', text: 'Vamos chegar cedo pra ver o pôr do sol de lá' },
+                            { time: '18:37', sender: 'D', text: 'Perfeito! ❤️' }
+                        ]
+                    },
+                    {
+                        title: 'Puglia - Próxima Viagem',
+                        status: '💭 Ideia',
+                        statusClass: '',
+                        messages: [
+                            { time: '11:00', sender: 'T', text: 'Vi um lugar legal pra nossa próxima viagem' },
+                            { time: '11:01', sender: 'T', text: '[link: Puglia, Italy]' },
+                            { time: '11:05', sender: 'D', text: 'Que lindo!!' },
+                            { time: '11:06', sender: 'D', text: 'Parece perfeito pra ir com as meninas' },
+                            { time: '11:07', sender: 'D', text: 'Vamos planejar pro segundo semestre?' },
+                            { time: '11:08', sender: 'T', text: 'Bora! Vou pesquisar mais' }
+                        ]
+                    },
+                    {
+                        title: 'Promoção Lisboa',
+                        status: '⏳ Aguardando',
+                        statusClass: 'pending',
+                        messages: [
+                            { time: '09:00', sender: 'D', text: 'Amor, olha essa promoção!' },
+                            { time: '09:01', sender: 'D', text: 'São Paulo → Lisboa R$2.400 ida e volta' },
+                            { time: '09:01', sender: 'D', text: 'Março, férias das meninas' },
+                            { time: '09:05', sender: 'T', text: 'Uau, tá barato mesmo' },
+                            { time: '09:06', sender: 'T', text: 'Mas março não é muito frio?' },
+                            { time: '09:07', sender: 'D', text: 'Um pouco, mas dá pra aproveitar' },
+                            { time: '09:08', sender: 'D', text: 'Pensa e me fala?' },
+                            { time: '09:10', sender: 'T', text: 'Vou ver a agenda' }
+                        ]
+                    }
+                ]
+            },
+            financas: {
+                name: 'Finanças',
+                icon: '💰',
+                color: '#f1c40f',
+                pending: [
+                    { title: 'Pagar condomínio', due: 'Amanhã' }
+                ],
+                threads: [
+                    {
+                        title: 'Transferência Maria',
+                        status: '✓ Feito',
+                        statusClass: 'done',
+                        messages: [
+                            { time: '10:00', sender: 'D', text: 'Amor, a transferência de 700 pra Maria precisa ser feita hoje' },
+                            { time: '10:01', sender: 'T', text: 'Ok, faço agora' },
+                            { time: '10:05', sender: 'T', text: 'Qual banco dela?' },
+                            { time: '10:06', sender: 'D', text: 'Bradesco - Ag 1234 Conta 56789-0' },
+                            { time: '10:10', sender: 'T', text: 'Feito ✓' },
+                            { time: '10:11', sender: 'D', text: 'Obrigada! ❤️' }
+                        ]
+                    },
+                    {
+                        title: 'Contas do Mês',
+                        status: '⏳ Parcial',
+                        statusClass: 'pending',
+                        messages: [
+                            { time: '09:30', sender: 'D', text: 'As contas do mês:' },
+                            { time: '09:30', sender: 'D', text: '- Luz: R$380\n- Internet: R$150\n- Condomínio: R$1.200' },
+                            { time: '09:32', sender: 'T', text: 'Vou pagar tudo hoje' },
+                            { time: '14:00', sender: 'T', text: 'Paguei luz e internet' },
+                            { time: '14:01', sender: 'T', text: 'Condomínio só amanhã, limite diário' },
+                            { time: '14:02', sender: 'D', text: 'Ok! Obrigada por cuidar disso' }
+                        ]
+                    },
+                    {
+                        title: 'Investimento Tesouro',
+                        status: '📅 Fim de semana',
+                        statusClass: 'scheduled',
+                        messages: [
+                            { time: '21:00', sender: 'D', text: 'Amor, vi que o Tesouro tá pagando bem' },
+                            { time: '21:01', sender: 'D', text: 'Acha que vale mover parte da poupança?' },
+                            { time: '21:05', sender: 'T', text: 'Pode ser. Quanto tá?' },
+                            { time: '21:06', sender: 'D', text: 'IPCA+ 6,5%' },
+                            { time: '21:07', sender: 'T', text: 'Tá bom mesmo. Vamos conversar no fim de semana com calma?' },
+                            { time: '21:08', sender: 'D', text: 'Perfeito' }
+                        ]
+                    }
+                ]
+            },
+            nos: {
+                name: 'Nós',
+                icon: '❤️',
+                color: '#e91e63',
+                pending: [],
+                threads: [
+                    {
+                        title: 'Carinho Aleatório',
+                        status: '💬 Conexão',
+                        statusClass: '',
+                        messages: [
+                            { time: '10:15', sender: 'D', text: 'Te amo ❤️' },
+                            { time: '10:18', sender: 'T', text: 'Eu mais!' },
+                            { time: '10:19', sender: 'T', text: 'Tô com saudades' },
+                            { time: '10:20', sender: 'D', text: 'Eu também...' },
+                            { time: '10:20', sender: 'D', text: 'Hoje a noite vamos ter um tempinho junto?' },
+                            { time: '10:22', sender: 'T', text: 'Com certeza 😘' }
+                        ]
+                    },
+                    {
+                        title: 'Jantar de Sábado',
+                        status: '📅 Sáb 20h',
+                        statusClass: 'scheduled',
+                        messages: [
+                            { time: '19:00', sender: 'D', text: 'Vamos jantar fora sábado?' },
+                            { time: '19:02', sender: 'T', text: 'Bora! Onde?' },
+                            { time: '19:03', sender: 'D', text: 'Aquele japonês que a gente gosta?' },
+                            { time: '19:04', sender: 'T', text: 'Perfeito. Eu reservo' },
+                            { time: '19:05', sender: 'D', text: '❤️❤️❤️' },
+                            { time: '19:10', sender: 'T', text: 'Reservei pras 20h' },
+                            { time: '19:11', sender: 'D', text: 'Mal posso esperar!' }
+                        ]
+                    },
+                    {
+                        title: 'Apoio no Stress',
+                        status: '💬 Resolvido',
+                        statusClass: 'done',
+                        messages: [
+                            { time: '04:30', sender: 'D', text: 'Preocupação de o voo atrasar hoje e elas ficarem descobertas' },
+                            { time: '04:35', sender: 'T', text: 'Amor, vai dar certo. Te amo muito!!' },
+                            { time: '04:40', sender: 'D', text: 'Eu tava me sentindo mal de não poder ajudar com o stress aí' },
+                            { time: '04:45', sender: 'T', text: 'Pois é, você não gosta de montanha russa?' },
+                            { time: '04:45', sender: 'T', text: 'Então você gosta de frio na barriga :)' },
+                            { time: '04:46', sender: 'T', text: 'Até paga por isso 😂😂😂' },
+                            { time: '04:47', sender: 'D', text: 'Aí aí aí 😅' }
+                        ]
+                    }
+                ]
+            },
+            lazer: {
+                name: 'Lazer',
+                icon: '🎉',
+                color: '#2ecc71',
+                pending: [],
+                threads: [
+                    {
+                        title: 'Série Senna',
+                        status: '📅 Hoje',
+                        statusClass: 'scheduled',
+                        messages: [
+                            { time: '20:00', sender: 'T', text: 'Viu que lançou a série do Senna?' },
+                            { time: '20:02', sender: 'D', text: 'Vi! Tá com boas críticas' },
+                            { time: '20:03', sender: 'D', text: 'Vamos assistir hoje?' },
+                            { time: '20:04', sender: 'T', text: 'Bora! 🍿' },
+                            { time: '20:05', sender: 'D', text: 'Coloco as meninas pra dormir e te encontro no sofá' },
+                            { time: '20:06', sender: 'T', text: 'Combinado ❤️' }
+                        ]
+                    },
+                    {
+                        title: 'Ibirapuera',
+                        status: '✓ Feito',
+                        statusClass: 'done',
+                        messages: [
+                            { time: '10:00', sender: 'D', text: 'O que vamos fazer hoje?' },
+                            { time: '10:02', sender: 'T', text: 'Que tal Ibirapuera?' },
+                            { time: '10:03', sender: 'D', text: 'As meninas vão adorar!' },
+                            { time: '10:04', sender: 'D', text: 'Leva bicicleta?' },
+                            { time: '10:05', sender: 'T', text: 'Boa! E fazemos piquenique' },
+                            { time: '10:06', sender: 'D', text: 'Perfeito! Preparo umas coisas' },
+                            { time: '18:00', sender: 'D', text: 'Foi tão bom hoje! ❤️' },
+                            { time: '18:01', sender: 'T', text: 'As meninas amaram' }
+                        ]
+                    },
+                    {
+                        title: 'Restaurante Mexicano',
+                        status: '💭 Ideia',
+                        statusClass: '',
+                        messages: [
+                            { time: '12:30', sender: 'D', text: 'Olha esse restaurante novo' },
+                            { time: '12:31', sender: 'D', text: 'Mexicano, 4.7 estrelas' },
+                            { time: '12:35', sender: 'T', text: 'Parece bom!' },
+                            { time: '12:36', sender: 'T', text: 'Não comemos mexicano faz tempo' },
+                            { time: '12:37', sender: 'D', text: 'Vamos experimentar semana que vem?' },
+                            { time: '12:38', sender: 'T', text: 'Fechado 👍' }
+                        ]
+                    }
+                ]
+            },
+            saude: {
+                name: 'Saúde',
+                icon: '🏥',
+                color: '#e74c3c',
+                pending: [],
+                threads: [
+                    {
+                        title: 'Consulta Amanhã',
+                        status: '📅 Amanhã 9:30',
+                        statusClass: 'scheduled',
+                        messages: [
+                            { time: '14:00', sender: 'D', text: 'Minha consulta é amanhã 10h' },
+                            { time: '14:02', sender: 'T', text: 'Quer que eu te leve?' },
+                            { time: '14:03', sender: 'D', text: 'Seria ótimo, obrigada' },
+                            { time: '14:04', sender: 'D', text: 'Aí você pode trabalhar do café ao lado enquanto espera' },
+                            { time: '14:05', sender: 'T', text: 'Perfeito. Que horas saímos?' },
+                            { time: '14:06', sender: 'D', text: '9:30 tá bom?' },
+                            { time: '14:07', sender: 'T', text: 'Combinado ✓' }
+                        ]
+                    },
+                    {
+                        title: 'Doença',
+                        status: '✓ Resolvido',
+                        statusClass: 'done',
+                        messages: [
+                            { time: '16:25', sender: 'D', text: 'Vomitei de novo. Diarreia fortíssima.' },
+                            { time: '16:26', sender: 'D', text: 'Tenho a sensação que vou desmaiar quando levanto' },
+                            { time: '16:27', sender: 'D', text: 'Se você puder ficar comigo pelo menos já é uma grande ajuda' },
+                            { time: '16:30', sender: 'T', text: 'Tô indo aí agora' },
+                            { time: '16:31', sender: 'D', text: 'Obrigada ❤️' },
+                            { time: '17:00', sender: 'T', text: 'Cheguei. Trouxe soro e remédio' },
+                            { time: '17:01', sender: 'D', text: 'Você é tudo 😭❤️' }
+                        ]
+                    },
+                    {
+                        title: 'Caminhada Matinal',
+                        status: '📅 Seg/Qua/Sex 6:30',
+                        statusClass: 'scheduled',
+                        messages: [
+                            { time: '07:00', sender: 'D', text: 'Vamos voltar a caminhar de manhã?' },
+                            { time: '07:02', sender: 'T', text: 'Bora. Segunda, quarta e sexta?' },
+                            { time: '07:03', sender: 'D', text: 'Perfeito' },
+                            { time: '07:04', sender: 'D', text: '6:30 dá tempo antes das meninas acordarem' },
+                            { time: '07:05', sender: 'T', text: 'Fechado. Vou colocar alarme' },
+                            { time: '07:06', sender: 'D', text: '💪' }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Switch between main views
+        function switchView(viewId, navElement) {
+            // Hide all views
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+
+            // Show selected view
+            document.getElementById(viewId + '-view').classList.add('active');
+
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if (navElement) {
+                navElement.classList.add('active');
+            }
+
+            // Show/hide compose bar
+            const composeBar = document.getElementById('compose-bar');
+            if (viewId === 'stream') {
+                composeBar.classList.remove('hidden');
+            } else {
+                composeBar.classList.add('hidden');
+            }
+
+            currentView = viewId;
+            currentSpace = null;
+        }
+
+        // Open space detail view
+        function openSpaceDetail(spaceId) {
+            const space = spaceDetails[spaceId];
+            if (!space) return;
+
+            currentSpace = spaceId;
+
+            // Build detail HTML
+            let html = `
+                <div class="space-detail-header">
+                    <button class="back-btn" onclick="closeSpaceDetail()">←</button>
+                    <div class="space-detail-icon" style="background:${space.color}20;">${space.icon}</div>
+                    <div class="space-detail-title">
+                        <h2>${space.name}</h2>
+                        <small>${space.threads.length} conversas</small>
+                    </div>
+                </div>
+            `;
+
+            // Pending section
+            if (space.pending.length > 0) {
+                html += `<div class="pending-section">
+                    <div class="pending-section-title">⚡ Ações Pendentes</div>`;
+                space.pending.forEach(item => {
+                    html += `
+                        <div class="pending-item">
+                            <div class="pending-checkbox" onclick="this.classList.toggle('checked')"></div>
+                            <div style="flex:1;">
+                                <div style="font-weight:500;font-size:13px;">${item.title}</div>
+                                <div style="font-size:11px;color:var(--text-secondary);">${item.due}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Threads
+            space.threads.forEach(thread => {
+                html += `
+                    <div class="thread-card">
+                        <div class="thread-header">
+                            <span class="thread-title">${thread.title}</span>
+                            <span class="status-chip ${thread.statusClass}">${thread.status}</span>
+                        </div>
+                `;
+                thread.messages.forEach(msg => {
+                    const senderClass = msg.sender === 'D' ? 'daniela' : 'thiago';
+                    html += `
+                        <div class="message">
+                            <span class="message-time">${msg.time}</span>
+                            <span class="message-sender ${senderClass}">${msg.sender}:</span>
+                            <span class="message-text">${msg.text}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            });
+
+            document.getElementById('space-detail-view').innerHTML = html;
+
+            // Hide spaces, show detail
+            document.getElementById('spaces-view').classList.remove('active');
+            document.getElementById('space-detail-view').classList.add('active');
+        }
+
+        // Close space detail
+        function closeSpaceDetail() {
+            document.getElementById('space-detail-view').classList.remove('active');
+            document.getElementById('spaces-view').classList.add('active');
+            currentSpace = null;
+        }
+
+        // ========== MESSAGE SENDING ==========
+
+        // Detect space from message text
+        function detectSpace(text) {
+            const lowerText = text.toLowerCase();
+            let bestMatch = 'casa'; // default
+            let maxMatches = 0;
+
+            for (const [space, keywords] of Object.entries(spaceKeywords)) {
+                let matches = 0;
+                for (const keyword of keywords) {
+                    if (lowerText.includes(keyword)) {
+                        matches++;
+                    }
+                }
+                if (matches > maxMatches) {
+                    maxMatches = matches;
+                    bestMatch = space;
+                }
+            }
+
+            return bestMatch;
+        }
+
+        // Send a message
+        function sendMessage() {
+            const input = document.getElementById('compose-input');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            // Animate send button
+            const sendBtn = document.getElementById('compose-send');
+            sendBtn.classList.add('sending');
+            setTimeout(() => sendBtn.classList.remove('sending'), 200);
+
+            // Detect space (use context if set, otherwise detect)
+            const detectedSpace = composeSpaceContext || detectSpace(text);
+            const space = spaceConfig[detectedSpace];
+
+            // Create new message group
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' +
+                           now.getMinutes().toString().padStart(2, '0');
+
+            const messageGroup = document.createElement('div');
+            messageGroup.className = 'message-group new';
+            messageGroup.setAttribute('data-space', detectedSpace);
+            messageGroup.setAttribute('data-status', 'pending');
+            messageGroup.setAttribute('onclick', 'toggleMessageGroup(this)');
+            messageGroup.innerHTML = `
+                <div class="message-group-header">
+                    <span class="topic-badge ${detectedSpace}">${space.icon} ${space.name}</span>
+                    <span class="status-chip pending">⏳ Pendente</span>
+                </div>
+                <div class="message">
+                    <span class="message-time">${timeStr}</span>
+                    <span class="message-sender thiago">T:</span>
+                    <span class="message-text">${text}</span>
+                </div>
+                <div class="message-group-actions">
+                    <button class="action-btn primary" onclick="markGroupAsDone(event, this)">✓ Marcar como feito</button>
+                    <button class="action-btn secondary" onclick="replyToSpace(event, '${detectedSpace}')">💬 Responder</button>
+                </div>
+            `;
+
+            // Add to stream
+            const container = document.getElementById('new-messages-container');
+            container.insertBefore(messageGroup, container.firstChild);
+
+            // Store reference for undo
+            lastSentMessage = {
+                element: messageGroup,
+                space: detectedSpace,
+                text: text
+            };
+
+            // Clear input and context
+            input.value = '';
+            clearComposeContext();
+
+            // Show toast
+            showToast(`Enviado para ${space.icon} ${space.name}`, 'Mudar', () => openSpaceModal());
+
+            // Scroll to top
+            document.querySelector('.main-content').scrollTop = 0;
+        }
+
+        // ========== TOAST SYSTEM ==========
+
+        function showToast(message, btnText, btnAction, duration = 3000) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastBtn = document.getElementById('toast-btn');
+
+            toastMessage.textContent = message;
+            toastBtn.textContent = btnText;
+            toastBtn.onclick = (e) => {
+                e.stopPropagation();
+                btnAction();
+            };
+
+            // Set button style based on type
+            if (btnText === 'Desfazer') {
+                toastBtn.classList.add('undo');
+            } else {
+                toastBtn.classList.remove('undo');
+            }
+
+            toast.classList.add('show');
+
+            // Clear existing timeout
+            if (toastTimeout) clearTimeout(toastTimeout);
+
+            // Auto-dismiss
+            toastTimeout = setTimeout(() => {
+                hideToast();
+            }, duration);
+
+            // Tap toast to dismiss
+            toast.onclick = () => hideToast();
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('show');
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+                toastTimeout = null;
+            }
+        }
+
+        // ========== SPACE SELECTOR MODAL ==========
+
+        function openSpaceModal() {
+            const modal = document.getElementById('space-modal');
+            modal.classList.add('show');
+
+            // Highlight current space
+            document.querySelectorAll('.space-selector-item').forEach(item => {
+                item.classList.remove('selected');
+                if (lastSentMessage && item.dataset.space === lastSentMessage.space) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
+        function closeSpaceModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('space-modal');
+            modal.classList.remove('show');
+        }
+
+        function selectSpace(spaceId) {
+            if (!lastSentMessage) {
+                closeSpaceModal();
+                return;
+            }
+
+            const space = spaceConfig[spaceId];
+            const group = lastSentMessage.element;
+
+            // Update message group
+            const badge = group.querySelector('.topic-badge');
+            badge.className = `topic-badge ${spaceId}`;
+            badge.textContent = `${space.icon} ${space.name}`;
+            group.setAttribute('data-space', spaceId);
+
+            // Update reply button
+            const replyBtn = group.querySelector('.action-btn.secondary');
+            if (replyBtn) {
+                replyBtn.setAttribute('onclick', `replyToSpace(event, '${spaceId}')`);
+            }
+
+            // Update last sent message reference
+            lastSentMessage.space = spaceId;
+
+            // Close modal and show confirmation
+            closeSpaceModal();
+            showToast(`Movido para ${space.icon} ${space.name}`, 'OK', hideToast, 2000);
+        }
+
+        // ========== MESSAGE GROUP INTERACTIONS ==========
+
+        function toggleMessageGroup(e, element) {
+            // Don't toggle if clicking on action buttons
+            if (e.target.closest('.action-btn')) return;
+
+            // Collapse other expanded groups
+            document.querySelectorAll('.message-group.expanded').forEach(group => {
+                if (group !== element) {
+                    group.classList.remove('expanded');
+                }
+            });
+
+            // Toggle this group
+            element.classList.toggle('expanded');
+        }
+
+        function markGroupAsDone(event, button) {
+            event.stopPropagation();
+
+            const group = button.closest('.message-group');
+            const statusChip = group.querySelector('.status-chip');
+            const previousStatus = statusChip.textContent;
+            const previousClass = statusChip.className;
+
+            // Store for undo
+            lastCompletedGroup = {
+                element: group,
+                previousStatus: previousStatus,
+                previousClass: previousClass
+            };
+
+            // Update status
+            statusChip.className = 'status-chip done';
+            statusChip.textContent = '✓ Feito';
+
+            // Replace button
+            button.textContent = '✓ Concluído';
+            button.classList.remove('primary');
+            button.classList.add('secondary');
+            button.disabled = true;
+
+            // Collapse group
+            group.classList.remove('expanded');
+
+            // Show undo toast
+            showToast('✓ Marcado como feito', 'Desfazer', () => undoGroupComplete(), 5000);
+        }
+
+        function undoGroupComplete() {
+            if (!lastCompletedGroup) return;
+
+            const group = lastCompletedGroup.element;
+            const statusChip = group.querySelector('.status-chip');
+
+            // Restore status
+            statusChip.className = lastCompletedGroup.previousClass;
+            statusChip.textContent = lastCompletedGroup.previousStatus;
+
+            // Find and restore the button
+            const actionBtns = group.querySelectorAll('.action-btn');
+            actionBtns.forEach(btn => {
+                if (btn.textContent.includes('Concluído') || btn.disabled) {
+                    btn.textContent = '✓ Marcar como feito';
+                    btn.classList.remove('secondary');
+                    btn.classList.add('primary');
+                    btn.disabled = false;
+                }
+            });
+
+            lastCompletedGroup = null;
+            hideToast();
+        }
+
+        function replyToSpace(event, spaceId) {
+            event.stopPropagation();
+
+            const space = spaceConfig[spaceId];
+            composeSpaceContext = spaceId;
+
+            // Update compose context
+            const contextEl = document.getElementById('compose-context');
+            contextEl.querySelector('.space-icon').textContent = space.icon;
+            contextEl.querySelector('.space-name').textContent = space.name;
+            contextEl.classList.add('show');
+
+            // Focus input
+            const input = document.getElementById('compose-input');
+            input.focus();
+            input.placeholder = `Responder em ${space.name}...`;
+
+            // Collapse the group
+            const group = event.target.closest('.message-group');
+            if (group) group.classList.remove('expanded');
+
+            // Scroll to compose bar
+            document.querySelector('.main-content').scrollTo({
+                top: document.querySelector('.main-content').scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        function clearComposeContext() {
+            composeSpaceContext = null;
+            const contextEl = document.getElementById('compose-context');
+            contextEl.classList.remove('show');
+            document.getElementById('compose-input').placeholder = 'Mensagem...';
+        }
+
+        // ========== SWIPE TO COMPLETE (Tasks) ==========
+
+        function initSwipeToComplete() {
+            const taskCards = document.querySelectorAll('#my-tasks-section .task-card');
+
+            taskCards.forEach(card => {
+                let startX = 0;
+                let currentX = 0;
+                let isDragging = false;
+                const content = card.querySelector('.task-card-content');
+
+                const handleStart = (e) => {
+                    if (card.classList.contains('completed')) return;
+                    startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+                    isDragging = true;
+                    card.classList.add('swiping');
+                };
+
+                const handleMove = (e) => {
+                    if (!isDragging) return;
+                    currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+                    const diff = currentX - startX;
+
+                    // Only allow swipe right
+                    if (diff > 0) {
+                        content.style.transform = `translateX(${Math.min(diff, 150)}px)`;
+                    }
+                };
+
+                const handleEnd = () => {
+                    if (!isDragging) return;
+                    isDragging = false;
+
+                    const diff = currentX - startX;
+
+                    if (diff > 100) {
+                        // Complete the task
+                        completeTask(card);
+                    } else {
+                        // Snap back
+                        card.classList.remove('swiping');
+                        content.style.transform = '';
+                    }
+                };
+
+                // Mouse events
+                card.addEventListener('mousedown', handleStart);
+                document.addEventListener('mousemove', handleMove);
+                document.addEventListener('mouseup', handleEnd);
+
+                // Touch events
+                card.addEventListener('touchstart', handleStart, { passive: true });
+                card.addEventListener('touchmove', handleMove, { passive: true });
+                card.addEventListener('touchend', handleEnd);
+            });
+        }
+
+        function completeTask(card) {
+            const content = card.querySelector('.task-card-content');
+            const taskName = card.querySelector('.task-title').textContent;
+
+            // Store for undo
+            lastCompletedTask = {
+                element: card,
+                parentElement: card.parentElement,
+                nextSibling: card.nextSibling
+            };
+
+            // Animate out
+            card.classList.add('completing');
+            content.style.transform = 'translateX(100%)';
+
+            setTimeout(() => {
+                card.classList.add('removed');
+                setTimeout(() => {
+                    card.style.display = 'none';
+                }, 300);
+            }, 200);
+
+            // Show undo toast
+            showToast('✓ Tarefa concluída', 'Desfazer', () => undoTaskComplete(), 5000);
+        }
+
+        function undoTaskComplete() {
+            if (!lastCompletedTask) return;
+
+            const card = lastCompletedTask.element;
+            const content = card.querySelector('.task-card-content');
+
+            // Restore card
+            card.style.display = '';
+            card.classList.remove('completing', 'removed', 'swiping');
+            content.style.transform = '';
+
+            lastCompletedTask = null;
+            hideToast();
+        }
+
+        // ========== AI CARD SWIPE ==========
+
+        function initAICardSwipe() {
+            const aiCards = document.querySelectorAll('.ai-card');
+
+            aiCards.forEach(card => {
+                let startX = 0;
+                let currentX = 0;
+                let isDragging = false;
+
+                const handleStart = (e) => {
+                    // Don't swipe if clicking buttons
+                    if (e.target.closest('.ai-btn')) return;
+                    startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+                    isDragging = true;
+                    card.classList.add('swiping');
+                };
+
+                const handleMove = (e) => {
+                    if (!isDragging) return;
+                    currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+                    const diff = currentX - startX;
+                    card.style.transform = `translateX(${diff}px)`;
+                    card.style.opacity = 1 - Math.abs(diff) / 300;
+                };
+
+                const handleEnd = () => {
+                    if (!isDragging) return;
+                    isDragging = false;
+
+                    const diff = currentX - startX;
+
+                    if (diff > 100) {
+                        // Swipe right - save/accept
+                        card.classList.add('saved');
+                        setTimeout(() => card.remove(), 300);
+                        showToast('💾 Sugestão salva', 'OK', hideToast, 2000);
+                    } else if (diff < -100) {
+                        // Swipe left - dismiss
+                        card.classList.add('dismissed');
+                        setTimeout(() => card.remove(), 300);
+                    } else {
+                        // Snap back
+                        card.classList.remove('swiping');
+                        card.style.transform = '';
+                        card.style.opacity = '';
+                    }
+                };
+
+                card.addEventListener('mousedown', handleStart);
+                document.addEventListener('mousemove', handleMove);
+                document.addEventListener('mouseup', handleEnd);
+
+                card.addEventListener('touchstart', handleStart, { passive: true });
+                card.addEventListener('touchmove', handleMove, { passive: true });
+                card.addEventListener('touchend', handleEnd);
+            });
+        }
+
+        // ========== COMPOSE BAR ==========
+
+        function initComposeBar() {
+            const input = document.getElementById('compose-input');
+            const sendBtn = document.getElementById('compose-send');
+
+            // Send on button click
+            sendBtn.addEventListener('click', sendMessage);
+
+            // Send on Enter key
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        // ========== INITIALIZATION ==========
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set first nav item as active
+            document.querySelector('.nav-item').classList.add('active');
+
+            // Initialize compose bar
+            initComposeBar();
+
+            // Initialize swipe gestures
+            initSwipeToComplete();
+            initAICardSwipe();
+        });
+    </script>
+</body>
+</html>
