@@ -1,18 +1,20 @@
 # NAVI WhatsApp Analyzer Output Specification
 
-> Complete specification for the WhatsApp chat analyzer that generates categorized messages, scoring metrics, and AI agent contexts.
+> Complete specification for the WhatsApp chat analyzer with scientific health scoring based on validated academic research.
 
 ---
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Output 1: Categorized Messages for UI](#output-1-categorized-messages-for-ui)
-3. [Output 2: Scoring System](#output-2-scoring-system)
-4. [Output 3: AI Agent Contexts](#output-3-ai-agent-contexts)
-5. [Detection Rules & Keywords](#detection-rules--keywords)
-6. [Scoring Calculation Formulas](#scoring-calculation-formulas)
-7. [Configuration](#configuration)
+2. [Scientific Framework](#scientific-framework)
+3. [Output 1: Categorized Messages for UI](#output-1-categorized-messages-for-ui)
+4. [Output 2: Scientific Scoring System](#output-2-scientific-scoring-system)
+5. [Output 3: AI Agent Contexts](#output-3-ai-agent-contexts)
+6. [Detection Rules & Keywords](#detection-rules--keywords)
+7. [Pattern Detection (Gottman)](#pattern-detection-gottman)
+8. [Scoring Calculation Formulas](#scoring-calculation-formulas)
+9. [Configuration](#configuration)
 
 ---
 
@@ -23,8 +25,37 @@ The NAVI WhatsApp Analyzer processes chat exports and generates three key output
 | Output | Purpose | Consumer |
 |--------|---------|----------|
 | Categorized Messages | Display conversations grouped by topic/status | NAVI UI |
-| Scoring System | Track relationship health metrics | Dashboard & Insights |
+| Scientific Scoring | Research-backed relationship health metrics | Dashboard & Insights |
 | AI Agent Contexts | Personalized guidance for each party | Individual AI Agents |
+
+---
+
+## Scientific Framework
+
+### Research Foundation
+
+The scoring system is built on validated academic research:
+
+| Source | What it Provides | Citation |
+|--------|------------------|----------|
+| **Gottman's Research** | Four Horsemen detection, 5:1 ratio | Gottman, J. M. (1994). What Predicts Divorce? |
+| **Interpersonal Process Model** | Responsiveness, intimacy measurement | Reis, H. T., & Shaver, P. (1988) |
+| **Maintenance Behaviors** | Partnership equity, assurances | Stafford, L., & Canary, D. J. (1991) |
+| **CSI** | Precision satisfaction measurement | Funk, J. L., & Rogge, R. D. (2007) |
+| **DAS** | Dyadic adjustment measurement | Spanier, G. B. (1976) |
+
+### Key Theoretical Models
+
+1. **Gottman's Sound Relationship House** - Trust, commitment, turning toward, conflict management
+2. **Interpersonal Process Model of Intimacy** - Self-disclosure + Partner responsiveness = Intimacy
+3. **Relationship Maintenance Behaviors** - Positivity, assurances, understanding, self-disclosure, task-sharing
+
+### Critical Research Findings Applied
+
+- **Gottman's 5:1 Ratio**: Stable relationships have 5+ positive interactions for every negative one
+- **Four Horsemen Predict Divorce**: Criticism, contempt, defensiveness, stonewalling (90%+ accuracy)
+- **Perceived Partner Responsiveness**: Core predictor of satisfaction and longevity
+- **Similarity in Communication Patterns**: More important than frequency alone
 
 ---
 
@@ -200,68 +231,167 @@ Tasks are actionable items extracted from message groups.
 
 ---
 
-## Output 2: Scoring System
+## Output 2: Scientific Scoring System
 
-### 2.1 Health Score Schema
+### 2.1 Health Score Schema (Scientific Framework)
 
-The health score provides an overall relationship health metric from 1-10.
+The health score provides an overall relationship health metric from 0-100 based on validated academic research.
 
 ```json
 {
   "healthScore": {
-    "overall": "number (1.0-10.0, one decimal place)",
-    "label": "string (Crítico|Preocupante|Moderado|Saudável|Excelente)",
-    "trend": "string (improving|stable|declining)",
-    "components": {
-      "responseSymmetry": {
-        "score": "number (1.0-10.0)",
-        "percentage": "number (0-100)",
-        "description": "string"
+    "overall": "number (0-100)",
+    "label": "string (PT: Crítico|Preocupante|Atenção|Estável|Saudável|Florescente)",
+    "labelEn": "string (EN: Critical|Concerning|Attention|Stable|Healthy|Flourishing)",
+    "confidence": "number (0-1)",
+    "trend": "string (+X vs last month)",
+
+    "dimensions": {
+      "connectionQuality": {
+        "score": "number (0-100)",
+        "components": {
+          "responsiveness": { "score": "number", "insight": "string" },
+          "emotionalExpression": { "score": "number", "insight": "string" },
+          "reciprocity": { "score": "number", "insight": "string" }
+        },
+        "insights": ["array of strings"]
       },
-      "topicDiversity": {
-        "score": "number (1.0-10.0)",
-        "value": "string (X/8 topics)",
-        "description": "string"
+      "relationshipMaintenance": {
+        "score": "number (0-100)",
+        "components": {
+          "positivity": { "score": "number", "ratio": "string (X:1)" },
+          "assurances": { "score": "number", "perWeek": "number" },
+          "taskSharing": { "score": "number", "balance": "string" },
+          "understanding": { "score": "number", "insight": "string" }
+        }
       },
-      "sentimentTrend": {
-        "score": "number (1.0-10.0)",
-        "trend": "string (+/-X%)",
-        "description": "string"
+      "communicationHealth": {
+        "score": "number (0-100)",
+        "components": {
+          "gentleStartup": { "score": "number", "criticismCount": "number" },
+          "repairAttempts": { "score": "number", "successRate": "string" },
+          "absenceOfContempt": { "score": "number", "contemptCount": "number" },
+          "engagement": { "score": "number", "avgResponseMin": "number" }
+        }
       },
-      "affectionFrequency": {
-        "score": "number (1.0-10.0)",
-        "perWeek": "number",
-        "description": "string"
-      },
-      "conversationFrequency": {
-        "score": "number (1.0-10.0)",
-        "perDay": "number",
-        "description": "string"
+      "partnershipDynamics": {
+        "score": "number (0-100)",
+        "components": {
+          "equity": { "score": "number", "messageBalance": "string" },
+          "coordination": { "score": "number", "completionRate": "string" },
+          "sharedMeaning": { "score": "number", "perWeek": "number" }
+        }
       }
+    },
+
+    "insights": {
+      "strengths": [
+        {
+          "dimension": "string",
+          "finding": "string",
+          "evidence": "string"
+        }
+      ],
+      "opportunities": [
+        {
+          "dimension": "string",
+          "finding": "string",
+          "suggestion": "string",
+          "impact": "string"
+        }
+      ]
+    },
+
+    "alerts": [
+      {
+        "pattern": "string (criticism|contempt|defensiveness|stonewalling)",
+        "frequency": "string",
+        "context": "string",
+        "antidote": "string"
+      }
+    ]
+  },
+
+  "methodology": {
+    "framework": "Hybrid Gottman + Interpersonal Process Model + Maintenance Behaviors",
+    "scale": "1-100",
+    "temporalWeights": {
+      "recent_30d": 0.50,
+      "medium_90d": 0.30,
+      "longterm": 0.20
+    },
+    "dimensionWeights": {
+      "connection_quality": 0.30,
+      "relationship_maintenance": 0.25,
+      "communication_health": 0.25,
+      "partnership_dynamics": 0.20
     }
   }
 }
 ```
 
-#### Health Score Labels
+#### Health Score Labels (1-100 Scale)
 
-| Score Range | Label | Color | Interpretation |
-|-------------|-------|-------|----------------|
-| 1.0 - 3.0 | Crítico | `#e74c3c` | Needs immediate attention |
-| 3.1 - 5.0 | Preocupante | `#e67e22` | Several areas need improvement |
-| 5.1 - 6.5 | Moderado | `#f1c40f` | Room for improvement |
-| 6.6 - 8.0 | Saudável | `#2ecc71` | Good relationship dynamics |
-| 8.1 - 10.0 | Excelente | `#27ae60` | Outstanding communication |
+| Score Range | PT Label | EN Label | Color | Interpretation |
+|-------------|----------|----------|-------|----------------|
+| 85-100 | Florescente | Flourishing | `#27ae60` | Exceptional relationship health |
+| 70-84 | Saudável | Healthy | `#2ecc71` | Strong foundation, minor areas to nurture |
+| 55-69 | Estável | Stable | `#f1c40f` | Functioning but could improve |
+| 40-54 | Atenção | Attention | `#e67e22` | Noticeable patterns need addressing |
+| 25-39 | Preocupante | Concerning | `#e74c3c` | Significant issues present |
+| 0-24 | Crítico | Critical | `#c0392b` | Urgent intervention recommended |
 
-#### Component Descriptions
+### 2.2 Four-Dimension Model
 
-| Component | Weight | What it Measures |
-|-----------|--------|------------------|
-| `responseSymmetry` | 20% | Balance in who responds to whom |
-| `topicDiversity` | 15% | Variety of subjects discussed |
-| `sentimentTrend` | 25% | Emotional tone trajectory over time |
-| `affectionFrequency` | 20% | Frequency of affectionate expressions |
-| `conversationFrequency` | 20% | Volume and consistency of communication |
+#### Dimension 1: Connection Quality (30%)
+*Based on: Interpersonal Process Model (Reis & Shaver)*
+
+| Sub-Component | Weight | What We Measure | How |
+|---------------|--------|-----------------|-----|
+| **Responsiveness** | 40% | Quality of responses to partner | Response depth, relevance, acknowledgment |
+| **Emotional Expression** | 30% | Self-disclosure depth | Emotional words, vulnerability markers |
+| **Reciprocity** | 30% | Balance in emotional exchange | Turn-taking in emotional content |
+
+#### Dimension 2: Relationship Maintenance (25%)
+*Based on: Stafford & Canary Maintenance Behaviors*
+
+| Sub-Component | Weight | What We Measure | How |
+|---------------|--------|-----------------|-----|
+| **Positivity** | 35% | Cheerful, optimistic interactions | Positive sentiment ratio (Gottman's 5:1) |
+| **Assurances** | 25% | Expressions of commitment/love | "Te amo", future plans together |
+| **Task Sharing** | 25% | Collaborative coordination | Equal task initiation/completion |
+| **Understanding** | 15% | Empathy and validation | Validation phrases, support offers |
+
+#### Dimension 3: Communication Health (25%)
+*Based on: Gottman's Four Horsemen (inverse)*
+
+| Sub-Component | Weight | What We Measure | How |
+|---------------|--------|-----------------|-----|
+| **Gentle Startup** | 30% | Non-critical request framing | "Você pode..." vs "Você nunca..." |
+| **Repair Attempts** | 30% | Conflict de-escalation | Apologies, humor, softening |
+| **Absence of Contempt** | 25% | Respect in disagreements | No sarcasm, eye-roll language |
+| **Engagement** | 15% | Active participation | No stonewalling patterns |
+
+#### Dimension 4: Partnership Dynamics (20%)
+*Based on: Equity Theory, Interdependence*
+
+| Sub-Component | Weight | What We Measure | How |
+|---------------|--------|-----------------|-----|
+| **Equity** | 40% | Fair distribution of effort | Message volume, task ownership |
+| **Coordination** | 30% | Logistical efficiency | Task completion rate, decision speed |
+| **Shared Meaning** | 30% | Joint goals and values | Future planning, shared references |
+
+### 2.3 Temporal Weighting
+
+Instead of fixed baselines, we use temporal weighting:
+
+| Period | Weight | Purpose |
+|--------|--------|---------|
+| Recent (30 days) | 50% | Capture current state |
+| Medium-term (90 days) | 30% | Identify trends |
+| Long-term (all history) | 20% | Establish baseline patterns |
+
+This reduces noise from daily fluctuations while acknowledging trends.
 
 ### 2.2 Balance Metrics Schema
 
@@ -908,66 +1038,228 @@ Contextual: menção a Lia + urgência, múltiplas tarefas
 
 ---
 
+## Pattern Detection (Gottman)
+
+### Four Horsemen Detection
+
+The Four Horsemen predict relationship dissolution with >90% accuracy.
+
+#### Criticism Detection (PT-BR)
+```
+Patterns:
+- "você sempre", "você nunca"
+- "por que você não"
+- "você é [negative]" (preguiçoso, incompetente, etc.)
+- "você só pensa/liga/quer"
+- "você não faz/ajuda/colabora nada"
+- "o problema é você"
+- "sempre a mesma coisa com você"
+
+Impact: -5 points
+Antidote: Gentle Startup - "Eu sinto..." instead of "Você é..."
+```
+
+#### Contempt Detection (PT-BR) - Most Destructive
+```
+Patterns:
+- "grande coisa", "tanto faz", "que seja"
+- Sarcasm: "obviamente", "claro que não/sim"
+- "parabéns" (sarcastic), "que surpresa"
+- Dismissive: "você acha mesmo?", "tá bom né"
+- Eye-roll emoji: 🙄
+- "você é patético", "que piada"
+
+Impact: -8 points (highest penalty)
+Antidote: Build Culture of Appreciation - specific daily gratitude
+```
+
+#### Defensiveness Detection (PT-BR)
+```
+Patterns:
+- "mas você também"
+- "não é minha culpa"
+- "eu não fiz nada"
+- "você que começou/fez/disse"
+- Counter-attacking: "e você?"
+- "você está exagerando"
+- "não foi isso que eu disse"
+
+Impact: -4 points
+Antidote: Take Responsibility - accept partial responsibility
+```
+
+#### Stonewalling Detection (PT-BR)
+```
+Patterns:
+- "tanto faz", "faz o que você quiser"
+- "não quero falar", "me deixa"
+- "esquece", "chega"
+- Minimal responses to emotional content: "ok", "tá"
+- Long response delays after conflict (>2 hours)
+
+Impact: -6 points
+Antidote: Self-Soothing - 20min break then return to discuss
+```
+
+### Positive Pattern Detection
+
+#### Repair Attempts (+5 points)
+```
+Patterns:
+- "desculpa", "perdão", "me perdoa"
+- "não quis dizer/fazer/magoar"
+- "foi mal", "eu errei"
+- "você tem razão", "eu exagerei"
+- "podemos recomeçar", "vamos resolver"
+- Humor after tension
+```
+
+#### Affection (+3 points)
+```
+Patterns:
+- "te amo", "amo você", "saudade"
+- "meu amor", "querido/a", "fofo/a"
+- "lindo/a", "maravilhoso/a"
+- ❤️, 💕, 😘, 😍, 🥰
+```
+
+#### Gratitude (+3 points)
+```
+Patterns:
+- "obrigado/a por", "muito obrigado/a"
+- "agradeço", "valeu por"
+- "você é o/a melhor"
+- "não sei o que faria sem você"
+```
+
+#### Support (+4 points)
+```
+Patterns:
+- "estou aqui", "conte comigo"
+- "posso ajudar", "o que você precisa"
+- "vai ficar tudo bem", "você consegue"
+- "entendo", "que difícil", "sinto muito"
+```
+
+#### Active Listening (+4 points)
+```
+Patterns:
+- "como foi", "me conta", "conte mais"
+- "o que aconteceu", "como você está"
+- "quer conversar", "estou ouvindo"
+```
+
+#### Future Planning (+3 points)
+```
+Patterns:
+- "vamos fazer/planejar/marcar"
+- "nosso plano/projeto/futuro"
+- "quando a gente", "no futuro"
+- "juntos", "nossa casa/família/vida"
+```
+
+---
+
 ## Scoring Calculation Formulas
 
-### Overall Health Score
+### Overall Health Score (Scientific Framework)
 
 ```
-healthScore = (
-  responseSymmetry × 0.20 +
-  topicDiversity × 0.15 +
-  sentimentTrend × 0.25 +
-  affectionFrequency × 0.20 +
-  conversationFrequency × 0.20
+Overall = (
+    ConnectionQuality × 0.30 +
+    RelationshipMaintenance × 0.25 +
+    CommunicationHealth × 0.25 +
+    PartnershipDynamics × 0.20
 )
 ```
 
-### Component Calculations
-
-#### Response Symmetry (1-10)
+With temporal weighting:
 ```
-ratio = min(responsesByA, responsesByB) / max(responsesByA, responsesByB)
-score = ratio × 10
-Example: 85 responses by A, 100 by B → 85/100 = 0.85 → 8.5
-```
-
-#### Topic Diversity (1-10)
-```
-activeTopics = count of topics with messages in last 30 days
-score = (activeTopics / 8) × 10
-Example: 8/8 topics active → 10.0
+FinalScore = (
+    Recent30d × 0.50 +
+    Medium90d × 0.30 +
+    LongTerm × 0.20
+)
 ```
 
-#### Sentiment Trend (1-10)
+### Dimension Calculations
+
+#### Connection Quality (0-100)
 ```
-currentSentiment = average sentiment score last 7 days
-previousSentiment = average sentiment score 8-14 days ago
-change = (currentSentiment - previousSentiment) / previousSentiment
-score = 5 + (change × 50)  // capped at 1-10
-Example: +10% improvement → 5 + 5 = 10 (capped)
+score = (
+    Responsiveness × 0.40 +
+    EmotionalExpression × 0.30 +
+    Reciprocity × 0.30
+)
+
+Responsiveness: Based on response quality scores (depth, acknowledgment)
+EmotionalExpression: (emotional_messages / total_messages) / 0.05 × 70 + 30
+Reciprocity: 50 + (balance_ratio × 50)
 ```
 
-#### Affection Frequency (1-10)
+#### Relationship Maintenance (0-100)
 ```
-affectionMessages = count of messages with affection markers per week
-baseline = 10 messages per week (configurable)
-score = min(10, (affectionMessages / baseline) × 10)
-Example: 12 per week → 12/10 × 10 = 10 (capped)
+score = (
+    Positivity × 0.35 +
+    Assurances × 0.25 +
+    TaskSharing × 0.25 +
+    Understanding × 0.15
+)
+
+Positivity (Gottman Ratio):
+- ratio >= 5.0 → 100
+- ratio >= 3.0 → 70 + (ratio - 3.0) × 15
+- ratio >= 1.0 → 40 + (ratio - 1.0) × 15
+- ratio < 1.0 → max(10, ratio × 40)
 ```
 
-#### Conversation Frequency (1-10)
+#### Communication Health (0-100)
 ```
-dailyAverage = total messages / days in period
-baseline = 50 messages per day (configurable)
-score = min(10, (dailyAverage / baseline) × 10)
-Example: 47 per day → 47/50 × 10 = 9.4
+score = (
+    GentleStartup × 0.30 +
+    RepairAttempts × 0.30 +
+    AbsenceOfContempt × 0.25 +
+    Engagement × 0.15
+)
+
+GentleStartup: 100 - (criticism_count × penalty)
+AbsenceOfContempt:
+- 0 contempt → 100
+- 1 contempt → 70
+- 2-3 contempt → 50
+- >3 contempt → max(20, 30 - count × 2)
 ```
 
-### Balance Score
+#### Partnership Dynamics (0-100)
+```
+score = (
+    Equity × 0.40 +
+    Coordination × 0.30 +
+    SharedMeaning × 0.30
+)
+
+Equity: Combined message balance (60%) + initiative balance (40%)
+Balance = 100 - |percentage - 50| × 2
+```
+
+### Gottman Ratio Calculation
 
 ```
-balanceScore = 100 - |percentage_A - 50| × 2
-Example: 60/40 split → 100 - |60-50| × 2 = 80
+positive_count = sum of all positive patterns
+negative_count = sum of all negative patterns (Four Horsemen)
+
+ratio = positive_count / negative_count (if negative > 0, else positive_count)
+
+Target: 5.0 or higher (stable relationships)
+Warning: < 3.0
+Critical: < 1.0
+```
+
+### Legacy Score Conversion (1-10 to 0-100)
+
+```
+legacyScore × 10 ≈ newScore
+Example: 7.5/10 ≈ 75/100
 ```
 
 ---
@@ -1012,12 +1304,18 @@ Example: 60/40 split → 100 - |60-50| × 2 = 80
 
 - [ ] All JSON schemas are valid and parseable
 - [ ] Status detection rules cover all common patterns
-- [ ] Scoring formulas produce values in expected ranges (1-10)
-- [ ] Agent contexts include actionable, specific insights
+- [ ] Scoring formulas produce values in expected ranges (0-100)
+- [ ] Four Horsemen detection covers PT-BR variations
+- [ ] Positive patterns detection is comprehensive
+- [ ] Agent contexts include actionable, research-backed insights
 - [ ] Keywords cover Portuguese variations and common typos
 - [ ] Examples reflect realistic conversation patterns
 - [ ] All spaces/topics have complete keyword lists
 - [ ] Balance metrics correctly identify concerning patterns
+- [ ] Gottman ratio calculation is accurate
+- [ ] Temporal weighting reduces noise from daily fluctuations
+- [ ] Antidotes are provided for all Four Horsemen
+- [ ] Confidence scores reflect data volume appropriately
 
 ---
 
@@ -1025,4 +1323,21 @@ Example: 60/40 split → 100 - |60-50| × 2 = 80
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0 | 2026-01-26 | Scientific framework redesign with Gottman, Reis & Shaver, Stafford & Canary |
+| 2.0 | 2026-01-26 | New 4-dimension model (Connection, Maintenance, Communication, Partnership) |
+| 2.0 | 2026-01-26 | Scale changed from 1-10 to 0-100 for granularity |
+| 2.0 | 2026-01-26 | Added Four Horsemen detection with antidotes |
+| 2.0 | 2026-01-26 | Added temporal weighting (30d/90d/longterm) |
+| 2.0 | 2026-01-26 | Added research-backed insights and recommendations |
 | 1.0 | 2024-01-20 | Initial specification |
+
+---
+
+## References
+
+1. Gottman, J. M. (1994). *What Predicts Divorce? The Relationship Between Marital Processes and Marital Outcomes*
+2. Reis, H. T., & Shaver, P. (1988). *Intimacy as an interpersonal process*. In S. Duck (Ed.), Handbook of personal relationships
+3. Stafford, L., & Canary, D. J. (1991). *Maintenance strategies and romantic relationship type, gender and relational characteristics*
+4. Funk, J. L., & Rogge, R. D. (2007). *Testing the ruler with item response theory: Increasing precision of measurement for relationship satisfaction with the Couples Satisfaction Index (CSI)*
+5. Spanier, G. B. (1976). *Measuring dyadic adjustment: New scales for assessing the quality of marriage and similar dyads (DAS)*
+6. Hendrick, S. S. (1988). *A generic measure of relationship satisfaction (RAS)*

@@ -6,8 +6,18 @@ following the ANALYZER_OUTPUT_SPEC.md specification.
 
 Generates three outputs:
 1. Categorized Messages for UI
-2. Scoring System (health metrics)
+2. Scoring System (scientific health metrics based on research)
 3. AI Agent Contexts
+
+Scientific Framework:
+- Gottman's research for conflict detection and predictive validity
+- Interpersonal Process Model for connection quality
+- Maintenance Behaviors for partnership equity
+
+References:
+- Gottman, J. M. (1994). What Predicts Divorce?
+- Reis, H. T., & Shaver, P. (1988). Intimacy as an interpersonal process
+- Stafford, L., & Canary, D. J. (1991). Maintenance strategies
 """
 
 import re
@@ -17,6 +27,9 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 import pandas as pd
+
+from .scientific_scoring import ScientificHealthScorer
+from .pattern_detectors import RelationshipPatternAnalyzer, PatternSummary
 
 
 class NAVIOutputGenerator:
@@ -405,13 +418,45 @@ class NAVIOutputGenerator:
 
     def generate_health_score(self, analyzer=None) -> Dict:
         """
-        Generate health score metrics.
+        Generate scientific health score using validated academic frameworks.
+
+        Based on:
+        - Gottman's research for conflict detection (Four Horsemen, 5:1 ratio)
+        - Interpersonal Process Model for connection quality
+        - Maintenance Behaviors for partnership equity
+
+        Scale: 1-100 (granular)
+
+        Dimensions:
+        - Connection Quality (30%)
+        - Relationship Maintenance (25%)
+        - Communication Health (25%)
+        - Partnership Dynamics (20%)
 
         Args:
-            analyzer: ChatAnalyzer instance for additional metrics
+            analyzer: ChatAnalyzer instance for additional metrics (optional)
 
         Returns:
-            Health score dictionary per spec
+            Scientific health score dictionary with dimensions and insights
+        """
+        # Initialize scientific scorer
+        scorer = ScientificHealthScorer(
+            df=self.df,
+            sender_col='sender',
+            message_col='message',
+            datetime_col='datetime',
+            person_a=self.thiago_name,
+            person_b=self.daniela_name
+        )
+
+        # Get full scientific score
+        return scorer.to_dict()
+
+    def generate_health_score_legacy(self, analyzer=None) -> Dict:
+        """
+        Legacy health score calculation (deprecated).
+
+        Kept for backwards compatibility. Use generate_health_score() instead.
         """
         text_df = self.df[self.df['type'] == 'text'].copy()
 
@@ -430,7 +475,7 @@ class NAVIOutputGenerator:
         # Calculate conversation frequency
         conv_frequency = self._calculate_conversation_frequency()
 
-        # Calculate overall score
+        # Calculate overall score (1-10 scale, legacy)
         weights = {
             'responseSymmetry': 0.20,
             'topicDiversity': 0.15,
@@ -460,9 +505,11 @@ class NAVIOutputGenerator:
             label = 'Crítico'
 
         return {
-            'healthScore': {
+            'healthScoreLegacy': {
                 'overall': round(overall, 1),
                 'label': label,
+                'scale': '1-10',
+                'deprecated': True,
                 'components': {
                     'responseSymmetry': response_symmetry,
                     'topicDiversity': topic_diversity,
@@ -474,7 +521,7 @@ class NAVIOutputGenerator:
         }
 
     def _calculate_response_symmetry(self) -> Dict:
-        """Calculate response symmetry score."""
+        """Calculate response symmetry score (legacy)."""
         df_sorted = self.df.sort_values('datetime').copy()
         df_sorted['prev_sender'] = df_sorted['sender'].shift(1)
 
@@ -501,7 +548,7 @@ class NAVIOutputGenerator:
         }
 
     def _calculate_topic_diversity(self) -> Dict:
-        """Calculate topic diversity score."""
+        """Calculate topic diversity score (legacy)."""
         if 'primary_topic' not in self.df.columns:
             return {'score': 5.0, 'value': '0/8', 'description': 'Sem dados de tópicos'}
 
@@ -522,7 +569,7 @@ class NAVIOutputGenerator:
         }
 
     def _calculate_sentiment_trend(self) -> Dict:
-        """Calculate sentiment trend score."""
+        """Calculate sentiment trend score (legacy)."""
         if 'sentiment_score' not in self.df.columns:
             return {'score': 5.0, 'trend': '0%', 'description': 'Sem dados de sentimento'}
 
@@ -556,7 +603,7 @@ class NAVIOutputGenerator:
         }
 
     def _calculate_affection_frequency(self) -> Dict:
-        """Calculate affection expression frequency."""
+        """Calculate affection expression frequency (legacy)."""
         text_df = self.df[self.df['type'] == 'text']
         combined_text = ' '.join(text_df['message'].fillna('').astype(str)).lower()
 
@@ -581,7 +628,7 @@ class NAVIOutputGenerator:
         }
 
     def _calculate_conversation_frequency(self) -> Dict:
-        """Calculate conversation frequency score."""
+        """Calculate conversation frequency score (legacy)."""
         daily_counts = self.df.groupby(self.df['datetime'].dt.date).size()
         avg_per_day = daily_counts.mean()
 
@@ -592,6 +639,34 @@ class NAVIOutputGenerator:
             'score': round(score, 1),
             'perDay': round(avg_per_day, 0),
             'description': 'Mensagens por dia'
+        }
+
+    def generate_pattern_analysis(self) -> Dict:
+        """
+        Generate detailed pattern analysis using Gottman's framework.
+
+        Returns:
+            Dictionary with Four Horsemen detection and positive pattern counts
+        """
+        analyzer = RelationshipPatternAnalyzer()
+        summary = analyzer.analyze_conversation(
+            self.df,
+            sender_col='sender',
+            message_col='message',
+            datetime_col='datetime'
+        )
+
+        return {
+            'patternAnalysis': {
+                'positiveNegativeRatio': round(summary.positive_ratio, 1),
+                'gottmanRatioMet': summary.positive_ratio >= 5.0,
+                'fourHorsemen': summary.four_horsemen_counts,
+                'positivePatterns': summary.positive_counts,
+                'totalPositive': summary.total_positive,
+                'totalNegative': summary.total_negative,
+                'alerts': summary.alerts,
+                'methodology': 'Gottman Four Horsemen + Stafford-Canary Maintenance Behaviors'
+            }
         }
 
     def generate_balance_metrics(self) -> Dict:
@@ -953,18 +1028,39 @@ class NAVIOutputGenerator:
         }
 
     def generate_community_context(self) -> Dict:
-        """Generate Community Manager context."""
+        """Generate Community Manager context with scientific scoring insights."""
         health = self.generate_health_score()
         balance = self.generate_balance_metrics()
+
+        # Extract insights from scientific score
+        health_score = health.get('healthScore', {})
+        overall = health_score.get('overall', 50)
+        insights = health_score.get('insights', {})
+        alerts = health_score.get('alerts', [])
 
         # Find recent success patterns
         success_patterns = self._find_success_patterns()
 
-        # Find attention areas
-        attention_areas = self._find_attention_areas()
+        # Find attention areas (enhanced with scientific insights)
+        attention_areas = self._find_attention_areas_scientific(insights, alerts)
 
         # Find celebration moments
         celebrations = self._find_celebrations()
+
+        # Extract strength and growth areas from scientific analysis
+        strength_areas = [s.get('dimension', '').replace('Quality', '').replace('Maintenance', '')
+                        for s in insights.get('strengths', [])]
+        growth_areas = [o.get('dimension', '').replace('Quality', '').replace('Maintenance', '')
+                       for o in insights.get('opportunities', [])]
+
+        # Determine health trend from scientific score
+        trend_str = health_score.get('trend', 'stable')
+        if '+' in trend_str:
+            health_trend = 'improving'
+        elif '-' in trend_str:
+            health_trend = 'declining'
+        else:
+            health_trend = 'stable'
 
         return {
             'communityContext': {
@@ -972,27 +1068,110 @@ class NAVIOutputGenerator:
                 'lastUpdated': datetime.now().isoformat(),
 
                 'relationshipDynamics': {
-                    'overallHealth': health['healthScore']['overall'],
-                    'healthTrend': 'stable',
-                    'strengthAreas': ['crisis_response', 'task_collaboration'],
-                    'growthAreas': ['scheduled_connection_time']
+                    'overallHealth': overall,
+                    'healthLabel': health_score.get('label', 'N/A'),
+                    'healthTrend': health_trend,
+                    'confidence': health_score.get('confidence', 0),
+                    'strengthAreas': strength_areas if strength_areas else ['crisis_response', 'task_collaboration'],
+                    'growthAreas': growth_areas if growth_areas else ['scheduled_connection_time']
                 },
+
+                'scientificInsights': insights,
+                'alerts': alerts,
 
                 'successPatterns': success_patterns,
                 'attentionAreas': attention_areas,
                 'celebrationMoments': celebrations,
 
-                'suggestedActivities': [
-                    {
-                        'type': 'couple_time',
-                        'suggestion': 'Reservar tempo só para vocês dois',
-                        'rationale': 'Importante manter conexão emocional',
-                        'timing': 'Fim de semana',
-                        'priority': 'medium'
-                    }
-                ]
+                'suggestedActivities': self._generate_suggested_activities(insights, alerts),
+
+                'methodology': {
+                    'framework': 'Gottman + Interpersonal Process Model + Maintenance Behaviors',
+                    'scale': '1-100',
+                    'references': [
+                        'Gottman, J. M. (1994). What Predicts Divorce?',
+                        'Reis & Shaver (1988). Intimacy as interpersonal process'
+                    ]
+                }
             }
         }
+
+    def _find_attention_areas_scientific(self, insights: Dict, alerts: List[Dict]) -> List[Dict]:
+        """Find attention areas based on scientific analysis."""
+        areas = []
+
+        # Convert opportunities to attention areas
+        for opp in insights.get('opportunities', []):
+            areas.append({
+                'area': opp.get('dimension', 'general'),
+                'observation': opp.get('finding', 'Área precisa de atenção'),
+                'suggestion': opp.get('suggestion', 'Investir mais nesta área'),
+                'priority': 'high' if opp.get('impact', '').lower().startswith('crít') else 'medium',
+                'researchBased': True
+            })
+
+        # Convert alerts to attention areas
+        for alert in alerts:
+            areas.append({
+                'area': alert.get('pattern', 'communication'),
+                'observation': f"{alert.get('pattern', 'Padrão').title()} detectado {alert.get('frequency', '')}",
+                'suggestion': alert.get('antidote', 'Aplicar antídoto de Gottman'),
+                'priority': 'high',
+                'researchBased': True,
+                'antidote': alert.get('antidote')
+            })
+
+        # Add legacy attention areas if none from scientific analysis
+        if not areas:
+            areas = self._find_attention_areas()
+
+        return areas
+
+    def _generate_suggested_activities(self, insights: Dict, alerts: List[Dict]) -> List[Dict]:
+        """Generate research-backed suggested activities."""
+        activities = []
+
+        # Base activity
+        activities.append({
+            'type': 'couple_time',
+            'suggestion': 'Reservar tempo só para vocês dois',
+            'rationale': 'Importante manter conexão emocional (Gottman)',
+            'timing': 'Fim de semana',
+            'priority': 'medium'
+        })
+
+        # Add activities based on opportunities
+        for opp in insights.get('opportunities', []):
+            dim = opp.get('dimension', '')
+            if 'connection' in dim.lower():
+                activities.append({
+                    'type': 'deep_conversation',
+                    'suggestion': 'Reservar 20 minutos para conversa profunda sem distrações',
+                    'rationale': 'Melhora responsividade percebida (Reis & Shaver)',
+                    'timing': 'Qualquer noite',
+                    'priority': 'high'
+                })
+            elif 'communication' in dim.lower():
+                activities.append({
+                    'type': 'appreciation_ritual',
+                    'suggestion': 'Expressar uma gratidão específica por dia',
+                    'rationale': 'Antídoto para desprezo (Gottman)',
+                    'timing': 'Diário',
+                    'priority': 'high'
+                })
+
+        # Add activities based on alerts
+        for alert in alerts:
+            if alert.get('pattern') == 'contempt':
+                activities.append({
+                    'type': 'appreciation_building',
+                    'suggestion': 'Criar ritual de 3 coisas que admira no parceiro',
+                    'rationale': 'Construir cultura de apreciação (Gottman)',
+                    'timing': 'Semanal',
+                    'priority': 'critical'
+                })
+
+        return activities[:5]  # Limit to 5 suggestions
 
     def _find_success_patterns(self) -> List[Dict]:
         """Find successful relationship patterns from chat history."""
@@ -1059,10 +1238,14 @@ class NAVIOutputGenerator:
         Returns:
             Dictionary with all outputs
         """
+        # Generate scientific health score
+        health_score = self.generate_health_score()
+
         return {
             'messages': self.generate_message_groups(recent_days=recent_days),
             'scoring': {
-                **self.generate_health_score(),
+                **health_score,
+                **self.generate_pattern_analysis(),
                 **self.generate_balance_metrics(),
                 **self.generate_weekly_stats(),
             },
@@ -1077,7 +1260,8 @@ class NAVIOutputGenerator:
                 'dateRange': {
                     'start': self.df['datetime'].min().isoformat(),
                     'end': self.df['datetime'].max().isoformat(),
-                }
+                },
+                'scoringMethodology': health_score.get('methodology', {})
             }
         }
 

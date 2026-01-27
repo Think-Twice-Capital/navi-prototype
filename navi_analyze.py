@@ -22,6 +22,7 @@ from whatsapp_analyzer import (
     SentimentAnalyzer,
     TopicAnalyzer,
     NAVIOutputGenerator,
+    NAVIReportGenerator,
 )
 
 
@@ -65,6 +66,11 @@ def main():
         action='store_true',
         help='Verbose output'
     )
+    parser.add_argument(
+        '--no-reports',
+        action='store_true',
+        help='Skip generating markdown reports'
+    )
 
     args = parser.parse_args()
 
@@ -85,7 +91,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     # Step 1: Parse the chat
-    print("[1/4] Parsing WhatsApp chat...")
+    print("[1/5] Parsing WhatsApp chat...")
     parser_obj = WhatsAppParser(chat_file)
     df = parser_obj.parse()
 
@@ -96,17 +102,17 @@ def main():
         print(f"  - Date range: {start} to {end}")
 
     # Step 2: Run sentiment analysis
-    print("[2/4] Running sentiment analysis...")
+    print("[2/5] Running sentiment analysis...")
     sentiment_analyzer = SentimentAnalyzer()
     df = sentiment_analyzer.analyze_dataframe(df)
 
     # Step 3: Run topic analysis
-    print("[3/4] Running topic analysis...")
+    print("[3/5] Running topic analysis...")
     topic_analyzer = TopicAnalyzer()
     df = topic_analyzer.analyze_dataframe(df)
 
     # Step 4: Generate NAVI outputs
-    print("[4/4] Generating NAVI outputs...")
+    print("[4/5] Generating NAVI outputs...")
     navi_gen = NAVIOutputGenerator(
         df,
         thiago_name=args.thiago_name,
@@ -153,6 +159,28 @@ def main():
     tasks = messages.get('tasks', [])
     pending = len([t for t in tasks if t.get('status') in ('pending', 'urgent')])
     print(f"  Pending tasks: {pending}")
+
+    # Step 5: Generate markdown reports
+    if not args.no_reports:
+        print()
+        print("[5/5] Generating markdown reports...")
+
+        # Load all outputs for report generation
+        with open(paths['all_outputs.json'], 'r') as f:
+            all_outputs = json.load(f)
+
+        report_gen = NAVIReportGenerator(all_outputs)
+        report_dir = os.path.join(output_dir, 'reports')
+        report_paths = report_gen.save_reports(report_dir)
+
+        print()
+        print("Generated reports:")
+        for name, path in report_paths.items():
+            size = os.path.getsize(path)
+            print(f"  - {name}: {size:,} bytes")
+
+        print()
+        print(f"Reports directory: {report_dir}")
 
 
 if __name__ == "__main__":
