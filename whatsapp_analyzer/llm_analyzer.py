@@ -24,9 +24,9 @@ from collections import defaultdict
 import anthropic
 
 
-# Cost per million tokens for different models (as of 2024)
+# Cost per million tokens for different models (as of 2025)
 MODEL_COSTS = {
-    'claude-opus-4-5-20250514': {'input': 15.00, 'output': 75.00},
+    'claude-opus-4-5-20251101': {'input': 15.00, 'output': 75.00},
     'claude-sonnet-4-20250514': {'input': 3.00, 'output': 15.00},
     'claude-3-5-haiku-20241022': {'input': 0.25, 'output': 1.25},
 }
@@ -375,7 +375,7 @@ Respond with ONLY valid JSON (no markdown, no explanation outside JSON):
 }}"""
 
     def __init__(self,
-                 model: str = "claude-opus-4-5-20250514",
+                 model: str = "claude-opus-4-5-20251101",
                  analyze_all: bool = True):
         """
         Initialize the LLM analyzer.
