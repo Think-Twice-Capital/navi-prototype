@@ -6,6 +6,7 @@ from .visualizer import ChatVisualizer
 from .sentiment import SentimentAnalyzer
 from .topic_analyzer import TopicAnalyzer
 from .conflict_detector import ConflictDetector
+from .navi_output import NAVIOutputGenerator
 from .utils import format_duration, clean_text, get_portuguese_stopwords
 
 __all__ = [
@@ -15,6 +16,7 @@ __all__ = [
     'SentimentAnalyzer',
     'TopicAnalyzer',
     'ConflictDetector',
+    'NAVIOutputGenerator',
     'format_duration',
     'clean_text',
     'get_portuguese_stopwords'
