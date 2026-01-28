@@ -3,10 +3,20 @@ NAVI Report Generator
 
 Generates human-readable markdown reports from NAVI JSON outputs.
 
-Updated to support the new scientific health score framework based on:
-- Gottman's research for conflict detection
-- Interpersonal Process Model for connection quality
-- Maintenance Behaviors for partnership equity
+Updated to support the NAVI v2.1 scientific health score framework:
+
+Dimensions (v2.1 - No Pattern Overlaps, 30-Day Scoring Window):
+- Emotional Connection (30%): Responsiveness, Vulnerability, Attunement
+- Affection & Commitment (25%): Expressed Affection, Commitment Signals, Appreciation
+- Communication Health (25%): Constructive Dialogue, Conflict Repair, Emotional Safety, Support
+- Partnership Equity (20%): Contribution Balance, Coordination, Emotional Reciprocity
+
+Scientific Framework:
+- Gottman's research for conflict detection and Four Horsemen
+- Interpersonal Process Model for emotional connection (Reis & Shaver)
+- Stafford & Canary Maintenance Behaviors for affection/commitment
+- Equity Theory for partnership balance
+- 30-day scoring window for faster responsiveness to behavioral changes
 """
 
 import json
@@ -109,74 +119,72 @@ This score is based on validated academic research:
 """
         dimensions = health.get('dimensions', {})
 
-        # Dimension 1: Connection Quality
-        conn = dimensions.get('connectionQuality', {})
+        # Dimension 1: Emotional Connection (v2.0)
+        conn = dimensions.get('emotionalConnection', {})
         conn_score = conn.get('score', 'N/A')
         conn_components = conn.get('components', {})
 
-        report += f"""### 1. Connection Quality: {conn_score}/100 (Weight: 30%)
+        report += f"""### 1. Emotional Connection: {conn_score}/100 (Weight: 30%)
 
 *Based on: Interpersonal Process Model (Reis & Shaver)*
 
 | Component | Score | Insight |
 |-----------|-------|---------|
 | Responsiveness | {conn_components.get('responsiveness', {}).get('score', 'N/A')} | {conn_components.get('responsiveness', {}).get('insight', 'N/A')} |
-| Emotional Expression | {conn_components.get('emotionalExpression', {}).get('score', 'N/A')} | {conn_components.get('emotionalExpression', {}).get('insight', 'N/A')} |
-| Reciprocity | {conn_components.get('reciprocity', {}).get('score', 'N/A')} | {conn_components.get('reciprocity', {}).get('insight', 'N/A')} |
+| Vulnerability | {conn_components.get('vulnerability', {}).get('score', 'N/A')} | {conn_components.get('vulnerability', {}).get('insight', 'N/A')} |
+| Attunement | {conn_components.get('attunement', {}).get('score', 'N/A')} | {conn_components.get('attunement', {}).get('insight', 'N/A')} |
 
 """
 
-        # Dimension 2: Relationship Maintenance
-        maint = dimensions.get('relationshipMaintenance', {})
-        maint_score = maint.get('score', 'N/A')
-        maint_components = maint.get('components', {})
+        # Dimension 2: Affection & Commitment (v2.0)
+        affection = dimensions.get('affectionCommitment', {})
+        affection_score = affection.get('score', 'N/A')
+        affection_components = affection.get('components', {})
 
-        positivity = maint_components.get('positivity', {})
-        report += f"""### 2. Relationship Maintenance: {maint_score}/100 (Weight: 25%)
+        report += f"""### 2. Affection & Commitment: {affection_score}/100 (Weight: 25%)
 
-*Based on: Stafford & Canary Maintenance Behaviors*
+*Based on: Stafford & Canary + Gottman Fondness/Admiration*
 
 | Component | Score | Detail |
 |-----------|-------|--------|
-| Positivity | {positivity.get('score', 'N/A')} | Ratio: {positivity.get('ratio', 'N/A')} (Gottman goal: 5:1) |
-| Assurances | {maint_components.get('assurances', {}).get('score', 'N/A')} | {maint_components.get('assurances', {}).get('perWeek', 'N/A')}/week |
-| Task Sharing | {maint_components.get('taskSharing', {}).get('score', 'N/A')} | Balance: {maint_components.get('taskSharing', {}).get('balance', 'N/A')} |
-| Understanding | {maint_components.get('understanding', {}).get('score', 'N/A')} | {maint_components.get('understanding', {}).get('insight', 'N/A')} |
+| Expressed Affection | {affection_components.get('expressedAffection', {}).get('score', 'N/A')} | {affection_components.get('expressedAffection', {}).get('perWeek', 'N/A')}/week |
+| Commitment Signals | {affection_components.get('commitmentSignals', {}).get('score', 'N/A')} | {affection_components.get('commitmentSignals', {}).get('perWeek', 'N/A')}/week |
+| Appreciation | {affection_components.get('appreciation', {}).get('score', 'N/A')} | {affection_components.get('appreciation', {}).get('insight', 'N/A')} |
 
 """
 
-        # Dimension 3: Communication Health
+        # Dimension 3: Communication Health (v2.0)
         comm = dimensions.get('communicationHealth', {})
         comm_score = comm.get('score', 'N/A')
         comm_components = comm.get('components', {})
 
         report += f"""### 3. Communication Health: {comm_score}/100 (Weight: 25%)
 
-*Based on: Gottman's Four Horsemen (inverse)*
+*Based on: Gottman's Four Horsemen (inverse, consolidated)*
 
 | Component | Score | Detail |
 |-----------|-------|--------|
-| Gentle Startup | {comm_components.get('gentleStartup', {}).get('score', 'N/A')} | Criticism count: {comm_components.get('gentleStartup', {}).get('criticismCount', 0)} |
-| Repair Attempts | {comm_components.get('repairAttempts', {}).get('score', 'N/A')} | Success rate: {comm_components.get('repairAttempts', {}).get('successRate', 'N/A')} |
-| Absence of Contempt | {comm_components.get('absenceOfContempt', {}).get('score', 'N/A')} | {comm_components.get('absenceOfContempt', {}).get('insight', 'N/A')} |
-| Engagement | {comm_components.get('engagement', {}).get('score', 'N/A')} | Avg response: {comm_components.get('engagement', {}).get('avgResponseMin', 'N/A')}min |
+| Constructive Dialogue | {comm_components.get('constructiveDialogue', {}).get('score', 'N/A')} | Criticism: {comm_components.get('constructiveDialogue', {}).get('criticismCount', 0)}, Defensiveness: {comm_components.get('constructiveDialogue', {}).get('defensivenessCount', 0)} |
+| Conflict Repair | {comm_components.get('conflictRepair', {}).get('score', 'N/A')} | Success rate: {comm_components.get('conflictRepair', {}).get('successRate', 'N/A')} |
+| Emotional Safety | {comm_components.get('emotionalSafety', {}).get('score', 'N/A')} | {comm_components.get('emotionalSafety', {}).get('insight', 'N/A')} |
+| Supportive Responses | {comm_components.get('supportiveResponses', {}).get('score', 'N/A')} | Rate: {comm_components.get('supportiveResponses', {}).get('rate', 'N/A')} |
 
 """
 
-        # Dimension 4: Partnership Dynamics
-        partner = dimensions.get('partnershipDynamics', {})
+        # Dimension 4: Partnership Equity (v2.0)
+        partner = dimensions.get('partnershipEquity', {})
         partner_score = partner.get('score', 'N/A')
         partner_components = partner.get('components', {})
 
-        report += f"""### 4. Partnership Dynamics: {partner_score}/100 (Weight: 20%)
+        report += f"""### 4. Partnership Equity: {partner_score}/100 (Weight: 20%)
 
 *Based on: Equity Theory, Interdependence*
 
 | Component | Score | Detail |
 |-----------|-------|--------|
-| Equity | {partner_components.get('equity', {}).get('score', 'N/A')} | Message balance: {partner_components.get('equity', {}).get('messageBalance', 'N/A')} |
-| Coordination | {partner_components.get('coordination', {}).get('score', 'N/A')} | Task completion: {partner_components.get('coordination', {}).get('completionRate', 'N/A')} |
-| Shared Meaning | {partner_components.get('sharedMeaning', {}).get('score', 'N/A')} | Future planning: {partner_components.get('sharedMeaning', {}).get('perWeek', 'N/A')}/week |
+| Contribution Balance | {partner_components.get('contributionBalance', {}).get('score', 'N/A')} | Task: {partner_components.get('contributionBalance', {}).get('taskBalance', 'N/A')}, Message: {partner_components.get('contributionBalance', {}).get('messageBalance', 'N/A')} |
+| Coordination | {partner_components.get('coordination', {}).get('score', 'N/A')} | {partner_components.get('coordination', {}).get('insight', 'N/A')} |
+| Emotional Reciprocity | {partner_components.get('emotionalReciprocity', {}).get('score', 'N/A')} | Ratio: {partner_components.get('emotionalReciprocity', {}).get('ratio', 'N/A')} |
 
 ---
 
@@ -217,7 +225,12 @@ This score is based on validated academic research:
         if strengths:
             report += "### Strengths\n\n"
             for s in strengths:
-                report += f"""**{s.get('dimension', 'N/A').replace('Quality', ' Quality').replace('Maintenance', ' Maintenance')}**
+                # v2.0 dimension names are already readable (emotionalConnection, affectionCommitment, etc.)
+                dim = s.get('dimension', 'N/A')
+                # Convert camelCase to Title Case with spaces
+                import re
+                dim_display = re.sub(r'([a-z])([A-Z])', r'\1 \2', dim).title()
+                report += f"""**{dim_display}**
 - {s.get('finding', 'N/A')}
 - Evidence: {s.get('evidence', 'N/A')}
 
@@ -228,7 +241,11 @@ This score is based on validated academic research:
         if opportunities:
             report += "### Growth Opportunities\n\n"
             for o in opportunities:
-                report += f"""**{o.get('dimension', 'N/A').replace('Quality', ' Quality').replace('Maintenance', ' Maintenance')}**
+                # v2.0 dimension names
+                dim = o.get('dimension', 'N/A')
+                import re
+                dim_display = re.sub(r'([a-z])([A-Z])', r'\1 \2', dim).title()
+                report += f"""**{dim_display}**
 - Finding: {o.get('finding', 'N/A')}
 - Suggestion: {o.get('suggestion', 'N/A')}
 - Impact: {o.get('impact', 'N/A')}
@@ -312,7 +329,7 @@ This score is based on validated academic research:
 
 ---
 
-*Report generated by NAVI WhatsApp Analyzer - Scientific Framework v2.0*
+*Report generated by NAVI WhatsApp Analyzer - Scientific Framework v2.1*
 """
         return report
 
@@ -795,7 +812,7 @@ This score is based on validated academic research:
 
         report += """---
 
-*Report generated by NAVI WhatsApp Analyzer - Scientific Framework v2.0*
+*Report generated by NAVI WhatsApp Analyzer - Scientific Framework v2.1*
 """
         return report
 

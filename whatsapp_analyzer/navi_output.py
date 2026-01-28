@@ -9,10 +9,17 @@ Generates three outputs:
 2. Scoring System (scientific health metrics based on research)
 3. AI Agent Contexts
 
-Scientific Framework:
+Scientific Framework (v2.1 - 30-Day Scoring Window):
 - Gottman's research for conflict detection and predictive validity
-- Interpersonal Process Model for connection quality
-- Maintenance Behaviors for partnership equity
+- Interpersonal Process Model for emotional connection
+- Stafford & Canary Maintenance Behaviors for affection/commitment
+- Equity Theory for partnership balance
+
+Dimensions (v2.1 - No Pattern Overlaps, 30-Day Window):
+- Emotional Connection (30%): Responsiveness, Vulnerability, Attunement
+- Affection & Commitment (25%): Expressed Affection, Commitment Signals, Appreciation
+- Communication Health (25%): Constructive Dialogue, Conflict Repair, Emotional Safety, Support
+- Partnership Equity (20%): Contribution Balance, Coordination, Emotional Reciprocity
 
 References:
 - Gottman, J. M. (1994). What Predicts Divorce?
@@ -427,11 +434,11 @@ class NAVIOutputGenerator:
 
         Scale: 1-100 (granular)
 
-        Dimensions:
-        - Connection Quality (30%)
-        - Relationship Maintenance (25%)
-        - Communication Health (25%)
-        - Partnership Dynamics (20%)
+        Dimensions (v2.0 - Restructured, No Pattern Overlaps):
+        - Emotional Connection (30%): Responsiveness, Vulnerability, Attunement
+        - Affection & Commitment (25%): Expressed Affection, Commitment Signals, Appreciation
+        - Communication Health (25%): Constructive Dialogue, Conflict Repair, Emotional Safety, Support
+        - Partnership Equity (20%): Contribution Balance, Coordination, Emotional Reciprocity
 
         Args:
             analyzer: ChatAnalyzer instance for additional metrics (optional)
@@ -1047,10 +1054,10 @@ class NAVIOutputGenerator:
         # Find celebration moments
         celebrations = self._find_celebrations()
 
-        # Extract strength and growth areas from scientific analysis
-        strength_areas = [s.get('dimension', '').replace('Quality', '').replace('Maintenance', '')
+        # Extract strength and growth areas from scientific analysis (v2.0 names)
+        strength_areas = [s.get('dimension', '')
                         for s in insights.get('strengths', [])]
-        growth_areas = [o.get('dimension', '').replace('Quality', '').replace('Maintenance', '')
+        growth_areas = [o.get('dimension', '')
                        for o in insights.get('opportunities', [])]
 
         # Determine health trend from scientific score
@@ -1086,11 +1093,15 @@ class NAVIOutputGenerator:
                 'suggestedActivities': self._generate_suggested_activities(insights, alerts),
 
                 'methodology': {
-                    'framework': 'Gottman + Interpersonal Process Model + Maintenance Behaviors',
+                    'framework': 'NAVI v2.1 - Restructured Dimensions (30-Day Window)',
+                    'version': '2.1',
                     'scale': '1-100',
+                    'scoringWindow': '30 days',
+                    'dimensions': ['emotionalConnection', 'affectionCommitment', 'communicationHealth', 'partnershipEquity'],
                     'references': [
                         'Gottman, J. M. (1994). What Predicts Divorce?',
-                        'Reis & Shaver (1988). Intimacy as interpersonal process'
+                        'Reis & Shaver (1988). Intimacy as interpersonal process',
+                        'Stafford & Canary (1991). Maintenance strategies'
                     ]
                 }
             }

@@ -4,11 +4,39 @@ Scientific Scoring Module
 Implements a validated 4-dimension relationship health scoring framework
 based on academic research from relationship science.
 
-Framework Dimensions:
-1. Connection Quality (30%) - Interpersonal Process Model
-2. Relationship Maintenance (25%) - Stafford & Canary
-3. Communication Health (25%) - Gottman's research
-4. Partnership Dynamics (20%) - Equity Theory
+RESTRUCTURED Framework Dimensions (v2.0):
+1. Emotional Connection (30%) - Interpersonal Process Model (Reis & Shaver)
+   - Responsiveness (40%): Quality of responses to partner
+   - Vulnerability (35%): Self-disclosure depth (DISCLOSURE_PATTERNS exclusive)
+   - Attunement (25%): Active listening behaviors (ACTIVE_LISTENING exclusive)
+
+2. Affection & Commitment (25%) - Stafford & Canary + Gottman
+   - Expressed Affection (40%): AFFECTION_PATTERNS exclusive
+   - Commitment Signals (35%): ASSURANCE + FUTURE_PLANNING exclusive
+   - Appreciation (25%): GRATITUDE_PATTERNS exclusive
+
+3. Communication Health (25%) - Gottman's Four Horsemen
+   - Constructive Dialogue (30%): CRITICISM + DEFENSIVENESS inverse
+   - Conflict Repair (30%): REPAIR_PATTERNS exclusive
+   - Emotional Safety (25%): CONTEMPT + STONEWALLING inverse
+   - Supportive Responses (15%): SUPPORT + UNDERSTANDING exclusive
+
+4. Partnership Equity (20%) - Equity Theory
+   - Contribution Balance (40%): Task sharing + initiative balance
+   - Coordination (35%): Task completion tracking
+   - Emotional Reciprocity (25%): Balance in emotional exchange
+
+Pattern Ownership (Exclusive - No Overlaps):
+- D1.Vulnerability: DISCLOSURE_PATTERNS
+- D1.Attunement: ACTIVE_LISTENING_PATTERNS
+- D2.Affection: AFFECTION_PATTERNS
+- D2.Commitment: ASSURANCE_PATTERNS + FUTURE_PLANNING_PATTERNS
+- D2.Appreciation: GRATITUDE_PATTERNS
+- D3.Dialogue: CRITICISM_PATTERNS + DEFENSIVENESS_PATTERNS (inverse)
+- D3.Repair: REPAIR_PATTERNS
+- D3.Safety: CONTEMPT_PATTERNS + STONEWALLING (inverse)
+- D3.Support: SUPPORT_PATTERNS + UNDERSTANDING_PATTERNS
+- D4: action_verbs, completion_markers, balance metrics
 
 LLM Enhancement (Phase 1):
 - Optional Claude Opus 4.5 integration for maximum quality baseline
@@ -76,11 +104,21 @@ class ScientificHealthScorer:
 
     Scale: 1-100 (granular)
 
-    Dimensions:
-    - Connection Quality (30%): Responsiveness, emotional expression, reciprocity
-    - Relationship Maintenance (25%): Positivity, assurances, task-sharing, understanding
-    - Communication Health (25%): Gentle startup, repairs, absence of contempt, engagement
-    - Partnership Dynamics (20%): Equity, coordination, shared meaning
+    RESTRUCTURED Dimensions (v2.1 - No Pattern Overlaps, 30-Day Window):
+    - Emotional Connection (30%): Responsiveness, vulnerability, attunement
+    - Affection & Commitment (25%): Expressed affection, commitment signals, appreciation
+    - Communication Health (25%): Constructive dialogue, conflict repair, emotional safety, support
+    - Partnership Equity (20%): Contribution balance, coordination, emotional reciprocity
+
+    Key Changes from v1.0:
+    - v2.0: Restructured dimensions to eliminate pattern overlaps
+    - v2.1: 30-day only scoring window for faster score responsiveness
+    - Reciprocity moved from D1 to D4 as "Emotional Reciprocity"
+    - Emotional Expression split: disclosure→D1.Vulnerability, affection→D2.Affection
+    - Positivity ratio feeds into D4.Emotional Reciprocity (repairs excluded)
+    - Task Sharing merged with Equity→D4.Contribution Balance
+    - Shared Meaning merged with Assurances→D2.Commitment Signals
+    - Four Horsemen consolidated into D3 sub-dimensions
     """
 
     # Score labels (PT-BR and EN)
@@ -93,20 +131,16 @@ class ScientificHealthScorer:
         (0, 24): ('Crítico', 'Critical'),
     }
 
-    # Dimension weights
+    # Dimension weights (v2.0)
     DIMENSION_WEIGHTS = {
-        'connection_quality': 0.30,
-        'relationship_maintenance': 0.25,
+        'emotional_connection': 0.30,
+        'affection_commitment': 0.25,
         'communication_health': 0.25,
-        'partnership_dynamics': 0.20,
+        'partnership_equity': 0.20,
     }
 
-    # Temporal weights
-    TEMPORAL_WEIGHTS = {
-        'recent_30d': 0.50,
-        'medium_90d': 0.30,
-        'longterm': 0.20,
-    }
+    # Temporal window (v2.1 - Last 30 days only for faster score changes)
+    SCORING_WINDOW_DAYS = 30
 
     def __init__(self, df: pd.DataFrame,
                  sender_col: str = 'sender',
@@ -173,19 +207,21 @@ class ScientificHealthScorer:
         self._llm_response_qualities: List[Dict] = []
         self._llm_vulnerability_depths: List[Dict] = []
 
-    def _get_temporal_dfs(self) -> Dict[str, pd.DataFrame]:
-        """Split DataFrame by temporal windows."""
-        now = self.df[self.datetime_col].max()
-        day_30 = now - timedelta(days=30)
-        day_90 = now - timedelta(days=90)
+    def _get_scoring_df(self) -> pd.DataFrame:
+        """
+        Get DataFrame filtered to scoring window (last 30 days).
 
+        v2.1: Only uses last 30 days for faster score responsiveness.
+        Relationships should see score changes quickly as patterns change.
+        """
+        now = self.df[self.datetime_col].max()
+        cutoff = now - timedelta(days=self.SCORING_WINDOW_DAYS)
+        return self.df[self.df[self.datetime_col] >= cutoff]
+
+    def _get_temporal_dfs(self) -> Dict[str, pd.DataFrame]:
+        """Legacy method - returns only recent period for compatibility."""
         return {
-            'recent_30d': self.df[self.df[self.datetime_col] >= day_30],
-            'medium_90d': self.df[
-                (self.df[self.datetime_col] >= day_90) &
-                (self.df[self.datetime_col] < day_30)
-            ],
-            'longterm': self.df[self.df[self.datetime_col] < day_90],
+            'recent_30d': self._get_scoring_df(),
             'all': self.df
         }
 
@@ -196,16 +232,21 @@ class ScientificHealthScorer:
                 return pt, en
         return 'N/A', 'N/A'
 
-    def calculate_connection_quality(self, df: pd.DataFrame = None) -> DimensionScore:
+    def calculate_emotional_connection(self, df: pd.DataFrame = None) -> DimensionScore:
         """
-        Calculate Connection Quality dimension (30%).
+        Calculate Emotional Connection dimension (30%).
 
         Based on Interpersonal Process Model (Reis & Shaver).
 
         Components:
         - Responsiveness (40%): Quality of responses to partner
-        - Emotional Expression (30%): Self-disclosure depth
-        - Reciprocity (30%): Balance in emotional exchange
+        - Vulnerability (35%): Self-disclosure depth (DISCLOSURE_PATTERNS exclusive)
+        - Attunement (25%): Active listening behaviors (ACTIVE_LISTENING exclusive)
+
+        Pattern Ownership:
+        - Vulnerability: Uses DISCLOSURE_PATTERNS exclusively
+        - Attunement: Uses ACTIVE_LISTENING_PATTERNS exclusively
+        - Responsiveness: Response quality assessment (no pattern overlap)
         """
         if df is None:
             df = self.df
@@ -224,36 +265,41 @@ class ScientificHealthScorer:
         # Component 1: Responsiveness (40%)
         responsiveness_score = self._calc_responsiveness(text_df)
 
-        # Component 2: Emotional Expression (30%)
-        emotional_score = self._calc_emotional_expression(text_df)
+        # Component 2: Vulnerability (35%) - DISCLOSURE_PATTERNS exclusive
+        vulnerability_score = self._calc_vulnerability(text_df)
 
-        # Component 3: Reciprocity (30%)
-        reciprocity_score = self._calc_reciprocity(text_df)
+        # Component 3: Attunement (25%) - ACTIVE_LISTENING exclusive
+        attunement_score = self._calc_attunement(text_df)
 
         # Calculate weighted score
         total_score = (
             responsiveness_score['score'] * 0.40 +
-            emotional_score['score'] * 0.30 +
-            reciprocity_score['score'] * 0.30
+            vulnerability_score['score'] * 0.35 +
+            attunement_score['score'] * 0.25
         )
 
         insights = []
         if responsiveness_score['score'] < 60:
-            insights.append('Respostas poderiam ser mais elaboradas')
-        if emotional_score['score'] >= 70:
-            insights.append('Boa expressão emocional')
-        if reciprocity_score['score'] >= 70:
-            insights.append('Troca emocional equilibrada')
+            insights.append('Respostas poderiam ser mais empáticas')
+        if vulnerability_score['score'] >= 70:
+            insights.append('Boa vulnerabilidade emocional')
+        if attunement_score['score'] >= 70:
+            insights.append('Forte escuta ativa')
 
         return DimensionScore(
             score=round(total_score, 1),
             components={
                 'responsiveness': responsiveness_score,
-                'emotionalExpression': emotional_score,
-                'reciprocity': reciprocity_score,
+                'vulnerability': vulnerability_score,
+                'attunement': attunement_score,
             },
             insights=insights
         )
+
+    # Legacy alias for backwards compatibility
+    def calculate_connection_quality(self, df: pd.DataFrame = None) -> DimensionScore:
+        """Legacy alias for calculate_emotional_connection."""
+        return self.calculate_emotional_connection(df)
 
     def _calc_responsiveness(self, df: pd.DataFrame) -> Dict:
         """
@@ -344,9 +390,11 @@ class ScientificHealthScorer:
 
         return {'score': round(avg_score, 1), 'insight': insight}
 
-    def _calc_emotional_expression(self, df: pd.DataFrame) -> Dict:
+    def _calc_vulnerability(self, df: pd.DataFrame) -> Dict:
         """
-        Calculate emotional expression score.
+        Calculate vulnerability score (D1.Vulnerability).
+
+        Uses DISCLOSURE_PATTERNS exclusively (no overlap with other dimensions).
 
         With LLM enhancement:
         - Assesses actual vulnerability depth (surface/moderate/deep)
@@ -355,36 +403,36 @@ class ScientificHealthScorer:
         """
         text_df = df.copy()
 
-        # Count emotional vocabulary usage (regex-based)
-        emotional_patterns = PositivePatternDetector.DISCLOSURE_PATTERNS
-        emotional_re = [re.compile(p, re.IGNORECASE) for p in emotional_patterns]
+        # EXCLUSIVE: Only DISCLOSURE_PATTERNS (not AFFECTION - that's D2)
+        disclosure_patterns = PositivePatternDetector.DISCLOSURE_PATTERNS
+        disclosure_re = [re.compile(p, re.IGNORECASE) for p in disclosure_patterns]
 
-        emotional_count = 0
-        emotional_messages = []
+        disclosure_count = 0
+        disclosure_messages = []
         total_messages = len(text_df)
 
         for idx, row in text_df.iterrows():
             text = str(row.get(self.message_col, ''))
-            for pattern in emotional_re:
+            for pattern in disclosure_re:
                 if pattern.search(text):
-                    emotional_count += 1
-                    emotional_messages.append((idx, text))
+                    disclosure_count += 1
+                    disclosure_messages.append((idx, text))
                     break
 
         # Calculate percentage and base score
         if total_messages == 0:
             return {'score': 50.0, 'insight': 'Dados insuficientes'}
 
-        emotional_rate = emotional_count / total_messages
+        disclosure_rate = disclosure_count / total_messages
 
-        # Baseline: 5% emotional messages is healthy
-        base_score = min(100, (emotional_rate / 0.05) * 70 + 30)
+        # Baseline: 5% disclosure messages is healthy
+        base_score = min(100, (disclosure_rate / 0.05) * 70 + 30)
 
         # LLM-enhanced vulnerability depth assessment
         depth_scores = []
-        if self.use_llm and emotional_messages:
-            # Sample up to 20 emotional messages for LLM analysis
-            sample_messages = emotional_messages[:20]
+        if self.use_llm and disclosure_messages:
+            # Sample up to 20 disclosure messages for LLM analysis
+            sample_messages = disclosure_messages[:20]
 
             for idx, text in sample_messages:
                 # Get context from nearby messages
@@ -393,7 +441,6 @@ class ScientificHealthScorer:
                 depth_result = self.llm_analyzer.analyze_vulnerability_depth(text, context)
 
                 # Convert depth level to score
-                depth_level_scores = {'surface': 30, 'moderate': 60, 'deep': 100}
                 depth_scores.append(depth_result.depth_score)
 
                 # Store for analysis
@@ -407,11 +454,11 @@ class ScientificHealthScorer:
 
         # Count unique emotional words for vocabulary diversity
         emotional_words = set()
+        vulnerability_words = ['sinto', 'medo', 'preocupado', 'ansioso', 'nervoso',
+                               'triste', 'frustrado', 'inseguro', 'vulnerável']
         for _, row in text_df.iterrows():
             text = str(row.get(self.message_col, '')).lower()
-            words = ['sinto', 'medo', 'feliz', 'triste', 'ansioso', 'preocupado',
-                     'nervoso', 'amor', 'saudade', 'alegria', 'frustrado']
-            for word in words:
+            for word in vulnerability_words:
                 if word in text:
                     emotional_words.add(word)
 
@@ -430,7 +477,7 @@ class ScientificHealthScorer:
             elif avg_depth >= 50:
                 insight = 'Boa profundidade emocional'
             else:
-                insight = 'Expressão emocional presente, pode aprofundar'
+                insight = 'Vulnerabilidade presente, pode aprofundar'
 
             return {
                 'score': round(final_score, 1),
@@ -442,17 +489,70 @@ class ScientificHealthScorer:
             }
 
         # Non-LLM insight
-        if diversity >= 6:
-            insight = 'Vocabulário emocional diverso'
-        elif diversity >= 3:
-            insight = 'Boa expressão emocional'
+        if diversity >= 5:
+            insight = 'Vocabulário de vulnerabilidade diverso'
+        elif diversity >= 2:
+            insight = 'Boa expressão de vulnerabilidade'
         else:
-            insight = 'Expressão emocional limitada'
+            insight = 'Vulnerabilidade emocional limitada'
 
         return {
             'score': round(base_score, 1),
             'insight': insight,
             'diversityCount': diversity
+        }
+
+    # Legacy alias
+    def _calc_emotional_expression(self, df: pd.DataFrame) -> Dict:
+        """Legacy alias for _calc_vulnerability."""
+        return self._calc_vulnerability(df)
+
+    def _calc_attunement(self, df: pd.DataFrame) -> Dict:
+        """
+        Calculate attunement score (D1.Attunement).
+
+        Uses ACTIVE_LISTENING_PATTERNS exclusively (no overlap with other dimensions).
+
+        Attunement indicators:
+        - Questions about partner's day/feelings
+        - Follow-up questions
+        - Showing interest in partner's experiences
+        """
+        # EXCLUSIVE: Only ACTIVE_LISTENING_PATTERNS
+        listening_patterns = PositivePatternDetector.ACTIVE_LISTENING_PATTERNS
+        listening_re = [re.compile(p, re.IGNORECASE) for p in listening_patterns]
+
+        listening_count = 0
+        total_messages = len(df)
+
+        for _, row in df.iterrows():
+            text = str(row.get(self.message_col, ''))
+            for pattern in listening_re:
+                if pattern.search(text):
+                    listening_count += 1
+                    break
+
+        if total_messages == 0:
+            return {'score': 50.0, 'insight': 'Dados insuficientes'}
+
+        listening_rate = listening_count / total_messages
+
+        # Baseline: 3% active listening is healthy
+        score = min(100, (listening_rate / 0.03) * 70 + 30)
+        score = max(30, score)
+
+        if listening_rate >= 0.05:
+            insight = 'Forte escuta ativa e interesse genuíno'
+        elif listening_rate >= 0.02:
+            insight = 'Boa sintonia com o parceiro'
+        else:
+            insight = 'Mais perguntas de interesse fortaleceriam conexão'
+
+        return {
+            'score': round(score, 1),
+            'rate': f'{listening_rate*100:.1f}%',
+            'count': listening_count,
+            'insight': insight
         }
 
     def _get_message_context(self, df: pd.DataFrame, idx: int, window: int = 3) -> str:
@@ -476,66 +576,97 @@ class ScientificHealthScorer:
         except Exception:
             return ""
 
-    def _calc_reciprocity(self, df: pd.DataFrame) -> Dict:
-        """Calculate emotional reciprocity score."""
-        # Count emotional expressions by each person
-        emotional_by_person = defaultdict(int)
+    def _calc_emotional_reciprocity(self, df: pd.DataFrame) -> Dict:
+        """
+        Calculate emotional reciprocity score (D4.Emotional Reciprocity).
 
-        emotional_patterns = (
-            PositivePatternDetector.AFFECTION_PATTERNS +
-            PositivePatternDetector.DISCLOSURE_PATTERNS
+        Moved from D1 to D4 in v2.0.
+
+        Measures the balance of positive emotional interactions.
+        Uses the 5:1 ratio concept from Gottman, but EXCLUDES repair patterns
+        (which are counted exclusively in D3.Conflict Repair).
+        """
+        summary = self.pattern_analyzer.analyze_conversation(
+            df,
+            sender_col=self.sender_col,
+            message_col=self.message_col,
+            datetime_col=self.datetime_col
         )
-        emotional_re = [re.compile(p, re.IGNORECASE) for p in emotional_patterns]
 
-        for _, row in df.iterrows():
-            text = str(row.get(self.message_col, ''))
-            sender = row.get(self.sender_col)
-            for pattern in emotional_re:
-                if pattern.search(text):
-                    emotional_by_person[sender] += 1
-                    break
+        # Get positive counts by person (for balance calculation)
+        positive_by_person = defaultdict(int)
+        negative_by_person = defaultdict(int)
 
-        counts = list(emotional_by_person.values())
-        if len(counts) < 2 or sum(counts) == 0:
-            return {'score': 50.0, 'insight': 'Dados insuficientes'}
+        for match in summary.matches:
+            sender = match.sender
+            if sender is None:
+                continue
+            if match.pattern_type == 'positive':
+                # EXCLUDE repairs from reciprocity (they're in D3)
+                if match.pattern_name != 'repair_attempt':
+                    positive_by_person[sender] += 1
+            else:
+                negative_by_person[sender] += 1
 
-        # Calculate balance (100 = perfect, 0 = one-sided)
-        total = sum(counts)
-        min_count = min(counts)
-        max_count = max(counts)
-
-        if max_count == 0:
+        # Calculate positive balance
+        pos_counts = list(positive_by_person.values())
+        if len(pos_counts) < 2 or sum(pos_counts) == 0:
             balance = 100
         else:
-            balance = (min_count / max_count) * 100
+            min_pos = min(pos_counts)
+            max_pos = max(pos_counts)
+            balance = (min_pos / max_pos) * 100 if max_pos > 0 else 100
 
-        # Score: perfect balance = 100, imbalanced = lower
-        score = 50 + (balance / 2)
+        # Calculate ratio (without repairs for this dimension)
+        total_pos = sum(pos_counts)
+        total_neg = sum(negative_by_person.values())
+        ratio = total_pos / total_neg if total_neg > 0 else (total_pos if total_pos > 0 else 5.0)
 
-        if balance >= 80:
-            insight = 'Troca emocional equilibrada'
-        elif balance >= 50:
-            insight = 'Moderada reciprocidade emocional'
+        # Score based on both balance and ratio
+        balance_score = 50 + (balance / 2)  # 50-100
+        ratio_score = min(100, ratio / 5 * 100)  # 100 at 5:1
+
+        # Combined score (60% ratio, 40% balance)
+        score = ratio_score * 0.6 + balance_score * 0.4
+
+        if ratio >= 5.0 and balance >= 70:
+            insight = 'Excelente equilíbrio emocional positivo'
+        elif ratio >= 3.0:
+            insight = 'Boa reciprocidade emocional'
+        elif ratio >= 1.0:
+            insight = 'Reciprocidade pode melhorar'
         else:
-            insight = 'Expressão emocional desequilibrada'
+            insight = 'Mais positividade mútua recomendada'
 
         return {
             'score': round(score, 1),
             'insight': insight,
-            'balance': f'{round(min_count/total*100)}/{round(max_count/total*100)}' if total > 0 else '50/50'
+            'ratio': f'{ratio:.1f}:1',
+            'balance': f'{round(balance)}%',
+            'positiveCount': total_pos,
+            'negativeCount': total_neg
         }
 
-    def calculate_relationship_maintenance(self, df: pd.DataFrame = None) -> DimensionScore:
-        """
-        Calculate Relationship Maintenance dimension (25%).
+    # Legacy alias (now uses the new method)
+    def _calc_reciprocity(self, df: pd.DataFrame) -> Dict:
+        """Legacy alias - redirects to _calc_emotional_reciprocity."""
+        return self._calc_emotional_reciprocity(df)
 
-        Based on Stafford & Canary's Maintenance Behaviors.
+    def calculate_affection_commitment(self, df: pd.DataFrame = None) -> DimensionScore:
+        """
+        Calculate Affection & Commitment dimension (25%).
+
+        Based on Stafford & Canary's Maintenance Behaviors + Gottman's Fondness/Admiration.
 
         Components:
-        - Positivity (35%): Cheerful, optimistic interactions
-        - Assurances (25%): Expressions of commitment/love
-        - Task Sharing (25%): Collaborative coordination
-        - Understanding (15%): Empathy and validation
+        - Expressed Affection (40%): AFFECTION_PATTERNS exclusive
+        - Commitment Signals (35%): ASSURANCE + FUTURE_PLANNING exclusive
+        - Appreciation (25%): GRATITUDE_PATTERNS exclusive
+
+        Pattern Ownership (v2.0 - No Overlaps):
+        - Affection: Uses AFFECTION_PATTERNS exclusively (not shared with D1)
+        - Commitment: Uses ASSURANCE + FUTURE_PLANNING exclusively (merged from old D4.SharedMeaning)
+        - Appreciation: Uses GRATITUDE_PATTERNS exclusively
         """
         if df is None:
             df = self.df
@@ -544,82 +675,103 @@ class ScientificHealthScorer:
         if len(text_df) == 0:
             return DimensionScore(score=50.0)
 
-        # Component 1: Positivity (35%) - Gottman's 5:1 ratio
-        positivity = self._calc_positivity(text_df)
+        # Component 1: Expressed Affection (40%) - AFFECTION_PATTERNS exclusive
+        affection = self._calc_expressed_affection(text_df)
 
-        # Component 2: Assurances (25%)
-        assurances = self._calc_assurances(text_df)
+        # Component 2: Commitment Signals (35%) - ASSURANCE + FUTURE_PLANNING exclusive
+        commitment = self._calc_commitment_signals(text_df)
 
-        # Component 3: Task Sharing (25%)
-        task_sharing = self._calc_task_sharing(text_df)
-
-        # Component 4: Understanding (15%)
-        understanding = self._calc_understanding(text_df)
+        # Component 3: Appreciation (25%) - GRATITUDE_PATTERNS exclusive
+        appreciation = self._calc_appreciation(text_df)
 
         # Calculate weighted score
         total_score = (
-            positivity['score'] * 0.35 +
-            assurances['score'] * 0.25 +
-            task_sharing['score'] * 0.25 +
-            understanding['score'] * 0.15
+            affection['score'] * 0.40 +
+            commitment['score'] * 0.35 +
+            appreciation['score'] * 0.25
         )
 
         insights = []
-        if positivity.get('ratio', 0) >= 5:
-            insights.append('Proporção positivo/negativo excelente')
-        if assurances['score'] >= 70:
-            insights.append('Fortes expressões de compromisso')
-        if task_sharing['score'] >= 70:
-            insights.append('Boa distribuição de tarefas')
+        if affection['score'] >= 70:
+            insights.append('Forte expressão de afeto')
+        if commitment['score'] >= 70:
+            insights.append('Sinais claros de compromisso')
+        if appreciation['score'] >= 70:
+            insights.append('Cultura de apreciação estabelecida')
 
         return DimensionScore(
             score=round(total_score, 1),
             components={
-                'positivity': positivity,
-                'assurances': assurances,
-                'taskSharing': task_sharing,
-                'understanding': understanding,
+                'expressedAffection': affection,
+                'commitmentSignals': commitment,
+                'appreciation': appreciation,
             },
             insights=insights
         )
 
-    def _calc_positivity(self, df: pd.DataFrame) -> Dict:
-        """Calculate positivity score using Gottman's ratio."""
-        summary = self.pattern_analyzer.analyze_conversation(
-            df,
-            sender_col=self.sender_col,
-            message_col=self.message_col,
-            datetime_col=self.datetime_col
-        )
+    # Legacy alias for backwards compatibility
+    def calculate_relationship_maintenance(self, df: pd.DataFrame = None) -> DimensionScore:
+        """Legacy alias for calculate_affection_commitment."""
+        return self.calculate_affection_commitment(df)
 
-        ratio = summary.positive_ratio
-        total_positive = summary.total_positive
-        total_negative = summary.total_negative
+    def _calc_expressed_affection(self, df: pd.DataFrame) -> Dict:
+        """
+        Calculate expressed affection score (D2.Expressed Affection).
 
-        # Score based on ratio (5:1 = 100, 1:1 = 40, <1:1 = lower)
-        if ratio >= 5.0:
+        Uses AFFECTION_PATTERNS exclusively (no overlap with other dimensions).
+        """
+        # EXCLUSIVE: Only AFFECTION_PATTERNS
+        affection_patterns = PositivePatternDetector.AFFECTION_PATTERNS
+        patterns_re = [re.compile(p, re.IGNORECASE) for p in affection_patterns]
+
+        count = 0
+        for _, row in df.iterrows():
+            text = str(row.get(self.message_col, ''))
+            for pattern in patterns_re:
+                if pattern.search(text):
+                    count += 1
+                    break
+
+        # Calculate per week
+        total_days = (df[self.datetime_col].max() - df[self.datetime_col].min()).days
+        weeks = max(total_days / 7, 1)
+        per_week = count / weeks
+
+        # Score: 15+ per week = 100, 7 = 70, 3 = 40
+        if per_week >= 15:
             score = 100
-        elif ratio >= 3.0:
-            score = 70 + (ratio - 3.0) * 15  # 70-100
-        elif ratio >= 1.0:
-            score = 40 + (ratio - 1.0) * 15  # 40-70
+        elif per_week >= 7:
+            score = 70 + (per_week - 7) * 3.75
+        elif per_week >= 3:
+            score = 40 + (per_week - 3) * 7.5
         else:
-            score = max(10, ratio * 40)  # 10-40
+            score = max(20, per_week * 13)
+
+        if per_week >= 10:
+            insight = 'Expressões frequentes de afeto'
+        elif per_week >= 5:
+            insight = 'Afeto presente regularmente'
+        else:
+            insight = 'Mais expressões de afeto fortaleceriam a conexão'
 
         return {
             'score': round(score, 1),
-            'ratio': f'{ratio:.1f}:1',
-            'positive': total_positive,
-            'negative': total_negative,
-            'insight': f'Proporção {ratio:.1f}:1 (meta: 5:1)'
+            'perWeek': round(per_week, 1),
+            'count': count,
+            'insight': insight
         }
 
-    def _calc_assurances(self, df: pd.DataFrame) -> Dict:
-        """Calculate commitment assurances score."""
-        assurance_patterns = PositivePatternDetector.ASSURANCE_PATTERNS
-        affection_patterns = PositivePatternDetector.AFFECTION_PATTERNS
+    def _calc_commitment_signals(self, df: pd.DataFrame) -> Dict:
+        """
+        Calculate commitment signals score (D2.Commitment Signals).
 
-        all_patterns = assurance_patterns + affection_patterns
+        Uses ASSURANCE_PATTERNS + FUTURE_PLANNING_PATTERNS exclusively.
+        Merged from old D4.SharedMeaning and D2.Assurances.
+        """
+        # EXCLUSIVE: ASSURANCE + FUTURE_PLANNING (merged)
+        assurance_patterns = PositivePatternDetector.ASSURANCE_PATTERNS
+        future_patterns = PositivePatternDetector.FUTURE_PLANNING_PATTERNS
+        all_patterns = assurance_patterns + future_patterns
         patterns_re = [re.compile(p, re.IGNORECASE) for p in all_patterns]
 
         count = 0
@@ -635,74 +787,40 @@ class ScientificHealthScorer:
         weeks = max(total_days / 7, 1)
         per_week = count / weeks
 
-        # Score: 10+ per week = 100, 5 = 70, 2 = 40
-        if per_week >= 10:
+        # Score: 8+ per week = 100, 4 = 70, 2 = 40
+        if per_week >= 8:
             score = 100
-        elif per_week >= 5:
-            score = 70 + (per_week - 5) * 6
+        elif per_week >= 4:
+            score = 70 + (per_week - 4) * 7.5
         elif per_week >= 2:
-            score = 40 + (per_week - 2) * 10
+            score = 40 + (per_week - 2) * 15
         else:
             score = max(20, per_week * 20)
+
+        if per_week >= 5:
+            insight = 'Fortes sinais de compromisso e futuro conjunto'
+        elif per_week >= 2:
+            insight = 'Compromisso demonstrado regularmente'
+        else:
+            insight = 'Mais sinais de compromisso fortaleceriam a relação'
 
         return {
             'score': round(score, 1),
             'perWeek': round(per_week, 1),
-            'insight': f'{round(per_week, 1)} expressões de compromisso/semana'
-        }
-
-    def _calc_task_sharing(self, df: pd.DataFrame) -> Dict:
-        """Calculate task sharing balance score."""
-        action_verbs = {
-            'pagar', 'fazer', 'comprar', 'ligar', 'marcar', 'resolver',
-            'buscar', 'levar', 'enviar', 'agendar', 'confirmar', 'cuidar'
-        }
-
-        task_by_person = defaultdict(int)
-
-        for _, row in df.iterrows():
-            text = str(row.get(self.message_col, '')).lower()
-            sender = row.get(self.sender_col)
-            if any(verb in text for verb in action_verbs):
-                task_by_person[sender] += 1
-
-        counts = list(task_by_person.values())
-        if len(counts) < 2 or sum(counts) == 0:
-            return {'score': 70.0, 'balance': '50/50', 'insight': 'Dados insuficientes'}
-
-        total = sum(counts)
-        min_count = min(counts)
-        max_count = max(counts)
-
-        # Calculate balance percentage
-        min_pct = round(min_count / total * 100)
-        max_pct = round(max_count / total * 100)
-
-        # Score: 50/50 = 100, 60/40 = 80, 70/30 = 60
-        balance_diff = abs(min_pct - 50)
-        score = 100 - (balance_diff * 1.5)
-        score = max(30, score)
-
-        if balance_diff <= 10:
-            insight = 'Distribuição equilibrada de tarefas'
-        elif balance_diff <= 20:
-            insight = 'Moderada assimetria nas tarefas'
-        else:
-            insight = 'Tarefas concentradas em uma pessoa'
-
-        return {
-            'score': round(score, 1),
-            'balance': f'{min_pct}/{max_pct}',
+            'count': count,
             'insight': insight
         }
 
-    def _calc_understanding(self, df: pd.DataFrame) -> Dict:
-        """Calculate understanding/validation score."""
-        understanding_patterns = PositivePatternDetector.UNDERSTANDING_PATTERNS
-        support_patterns = PositivePatternDetector.SUPPORT_PATTERNS
+    def _calc_appreciation(self, df: pd.DataFrame) -> Dict:
+        """
+        Calculate appreciation score (D2.Appreciation).
 
-        all_patterns = understanding_patterns + support_patterns
-        patterns_re = [re.compile(p, re.IGNORECASE) for p in all_patterns]
+        Uses GRATITUDE_PATTERNS exclusively.
+        Key antidote for contempt (Gottman).
+        """
+        # EXCLUSIVE: Only GRATITUDE_PATTERNS
+        gratitude_patterns = PositivePatternDetector.GRATITUDE_PATTERNS
+        patterns_re = [re.compile(p, re.IGNORECASE) for p in gratitude_patterns]
 
         count = 0
         for _, row in df.iterrows():
@@ -712,37 +830,171 @@ class ScientificHealthScorer:
                     count += 1
                     break
 
-        total = len(df)
-        rate = count / total if total > 0 else 0
+        # Calculate per week
+        total_days = (df[self.datetime_col].max() - df[self.datetime_col].min()).days
+        weeks = max(total_days / 7, 1)
+        per_week = count / weeks
 
-        # Score: 5% validation = 100, 2% = 60, 1% = 40
-        score = min(100, (rate / 0.05) * 100)
-        score = max(30, score)
-
-        if rate >= 0.05:
-            insight = 'Forte padrão de validação'
-        elif rate >= 0.02:
-            insight = 'Validação moderada'
+        # Score: 7+ per week = 100, 3 = 70, 1 = 40
+        if per_week >= 7:
+            score = 100
+        elif per_week >= 3:
+            score = 70 + (per_week - 3) * 7.5
+        elif per_week >= 1:
+            score = 40 + (per_week - 1) * 15
         else:
-            insight = 'Mais validação poderia fortalecer conexão'
+            score = max(20, per_week * 40)
+
+        if per_week >= 5:
+            insight = 'Cultura de apreciação forte'
+        elif per_week >= 2:
+            insight = 'Gratidão expressada regularmente'
+        else:
+            insight = 'Mais apreciação constrói cultura positiva'
 
         return {
             'score': round(score, 1),
-            'rate': f'{rate*100:.1f}%',
+            'perWeek': round(per_week, 1),
+            'count': count,
             'insight': insight
         }
+
+    # Legacy methods (kept for backwards compatibility)
+    def _calc_positivity(self, df: pd.DataFrame) -> Dict:
+        """Legacy positivity score - now part of D4.Emotional Reciprocity."""
+        summary = self.pattern_analyzer.analyze_conversation(
+            df,
+            sender_col=self.sender_col,
+            message_col=self.message_col,
+            datetime_col=self.datetime_col
+        )
+
+        ratio = summary.positive_ratio
+        total_positive = summary.total_positive
+        total_negative = summary.total_negative
+
+        # Score based on ratio (5:1 = 100, 1:1 = 40, <1:1 = lower)
+        if ratio >= 5.0:
+            score = 100
+        elif ratio >= 3.0:
+            score = 70 + (ratio - 3.0) * 15
+        elif ratio >= 1.0:
+            score = 40 + (ratio - 1.0) * 15
+        else:
+            score = max(10, ratio * 40)
+
+        return {
+            'score': round(score, 1),
+            'ratio': f'{ratio:.1f}:1',
+            'positive': total_positive,
+            'negative': total_negative,
+            'insight': f'Proporção {ratio:.1f}:1 (meta: 5:1)'
+        }
+
+    def _calc_assurances(self, df: pd.DataFrame) -> Dict:
+        """Legacy alias - redirects to _calc_commitment_signals."""
+        return self._calc_commitment_signals(df)
+
+    def _calc_contribution_balance(self, df: pd.DataFrame) -> Dict:
+        """
+        Calculate contribution balance score (D4.Contribution Balance).
+
+        Merged from old _calc_task_sharing and _calc_equity.
+        Uses action_verbs exclusively (no pattern overlap).
+
+        Measures:
+        - Task mention balance between partners
+        - Message volume balance
+        - Conversation initiation balance
+        """
+        action_verbs = {
+            'pagar', 'fazer', 'comprar', 'ligar', 'marcar', 'resolver',
+            'buscar', 'levar', 'enviar', 'agendar', 'confirmar', 'cuidar'
+        }
+
+        # Task balance
+        task_by_person = defaultdict(int)
+        for _, row in df.iterrows():
+            text = str(row.get(self.message_col, '')).lower()
+            sender = row.get(self.sender_col)
+            if any(verb in text for verb in action_verbs):
+                task_by_person[sender] += 1
+
+        task_counts = list(task_by_person.values())
+        if len(task_counts) >= 2 and sum(task_counts) > 0:
+            task_total = sum(task_counts)
+            task_min_pct = round(min(task_counts) / task_total * 100)
+            task_balance = 100 - abs(task_min_pct - 50) * 2
+        else:
+            task_balance = 70  # Default when insufficient data
+
+        # Message volume balance
+        msg_counts = df.groupby(self.sender_col).size()
+        if len(msg_counts) >= 2:
+            msg_total = msg_counts.sum()
+            msg_min_pct = round(msg_counts.min() / msg_total * 100)
+            msg_balance = 100 - abs(msg_min_pct - 50) * 2
+        else:
+            msg_balance = 70
+
+        # Initiative balance (who starts conversations after 4h gap)
+        df_sorted = df.sort_values(self.datetime_col)
+        df_sorted['time_diff'] = df_sorted[self.datetime_col].diff().dt.total_seconds() / 3600
+        initiations = df_sorted[
+            (df_sorted['time_diff'].isna()) | (df_sorted['time_diff'] >= 4)
+        ]
+        init_counts = initiations.groupby(self.sender_col).size()
+        if len(init_counts) >= 2:
+            init_total = init_counts.sum()
+            init_min_pct = round(init_counts.min() / init_total * 100)
+            init_balance = 100 - abs(init_min_pct - 50) * 2
+        else:
+            init_balance = 70
+
+        # Combined score (40% task, 35% message, 25% initiative)
+        score = task_balance * 0.40 + msg_balance * 0.35 + init_balance * 0.25
+
+        if score >= 80:
+            insight = 'Contribuições muito equilibradas'
+        elif score >= 60:
+            insight = 'Contribuições razoavelmente equilibradas'
+        else:
+            insight = 'Assimetria nas contribuições'
+
+        return {
+            'score': round(score, 1),
+            'taskBalance': f'{task_min_pct if len(task_counts) >= 2 else 50}%',
+            'messageBalance': f'{msg_min_pct if len(msg_counts) >= 2 else 50}%',
+            'initiativeBalance': f'{init_min_pct if len(init_counts) >= 2 else 50}%',
+            'insight': insight
+        }
+
+    # Legacy aliases
+    def _calc_task_sharing(self, df: pd.DataFrame) -> Dict:
+        """Legacy alias - redirects to _calc_contribution_balance."""
+        return self._calc_contribution_balance(df)
+
+    def _calc_equity(self, df: pd.DataFrame) -> Dict:
+        """Legacy alias - redirects to _calc_contribution_balance."""
+        return self._calc_contribution_balance(df)
 
     def calculate_communication_health(self, df: pd.DataFrame = None) -> DimensionScore:
         """
         Calculate Communication Health dimension (25%).
 
-        Based on Gottman's Four Horsemen (inverse).
+        Based on Gottman's Four Horsemen (inverse) with consolidated structure.
 
         Components:
-        - Gentle Startup (30%): Non-critical request framing
-        - Repair Attempts (30%): Conflict de-escalation
-        - Absence of Contempt (25%): Respect in disagreements
-        - Engagement (15%): Active participation
+        - Constructive Dialogue (30%): CRITICISM + DEFENSIVENESS inverse
+        - Conflict Repair (30%): REPAIR_PATTERNS exclusive
+        - Emotional Safety (25%): CONTEMPT + STONEWALLING inverse
+        - Supportive Responses (15%): SUPPORT + UNDERSTANDING exclusive
+
+        Pattern Ownership (v2.0 - Consolidated Four Horsemen):
+        - Constructive Dialogue: Inverse of CRITICISM + DEFENSIVENESS patterns
+        - Conflict Repair: Uses REPAIR_PATTERNS exclusively
+        - Emotional Safety: Inverse of CONTEMPT + STONEWALLING patterns
+        - Supportive Responses: Uses SUPPORT + UNDERSTANDING exclusively
         """
         if df is None:
             df = self.df
@@ -759,73 +1011,88 @@ class ScientificHealthScorer:
             datetime_col=self.datetime_col
         )
 
-        # Component 1: Gentle Startup (30%)
-        gentle_startup = self._calc_gentle_startup(summary)
+        # Component 1: Constructive Dialogue (30%) - CRITICISM + DEFENSIVENESS inverse
+        constructive_dialogue = self._calc_constructive_dialogue(summary)
 
-        # Component 2: Repair Attempts (30%)
-        repairs = self._calc_repair_attempts(summary)
+        # Component 2: Conflict Repair (30%) - REPAIR_PATTERNS exclusive
+        conflict_repair = self._calc_conflict_repair(summary)
 
-        # Component 3: Absence of Contempt (25%)
-        no_contempt = self._calc_absence_contempt(summary)
+        # Component 3: Emotional Safety (25%) - CONTEMPT + STONEWALLING inverse
+        emotional_safety = self._calc_emotional_safety(summary)
 
-        # Component 4: Engagement (15%)
-        engagement = self._calc_engagement(text_df)
+        # Component 4: Supportive Responses (15%) - SUPPORT + UNDERSTANDING exclusive
+        supportive_responses = self._calc_supportive_responses(text_df)
 
         # Calculate weighted score
         total_score = (
-            gentle_startup['score'] * 0.30 +
-            repairs['score'] * 0.30 +
-            no_contempt['score'] * 0.25 +
-            engagement['score'] * 0.15
+            constructive_dialogue['score'] * 0.30 +
+            conflict_repair['score'] * 0.30 +
+            emotional_safety['score'] * 0.25 +
+            supportive_responses['score'] * 0.15
         )
 
         insights = []
-        if repairs['score'] >= 70:
+        if conflict_repair['score'] >= 70:
             insights.append('Bons padrões de reparação')
-        if no_contempt['score'] >= 80:
-            insights.append('Comunicação respeitosa')
+        if emotional_safety['score'] >= 80:
+            insights.append('Comunicação emocionalmente segura')
+        if constructive_dialogue['score'] >= 80:
+            insights.append('Diálogo construtivo')
 
         return DimensionScore(
             score=round(total_score, 1),
             components={
-                'gentleStartup': gentle_startup,
-                'repairAttempts': repairs,
-                'absenceOfContempt': no_contempt,
-                'engagement': engagement,
+                'constructiveDialogue': constructive_dialogue,
+                'conflictRepair': conflict_repair,
+                'emotionalSafety': emotional_safety,
+                'supportiveResponses': supportive_responses,
             },
             insights=insights
         )
 
-    def _calc_gentle_startup(self, summary: PatternSummary) -> Dict:
-        """Calculate gentle startup score (inverse of criticism)."""
-        criticism_count = summary.four_horsemen_counts.get('criticism', 0)
+    def _calc_constructive_dialogue(self, summary: PatternSummary) -> Dict:
+        """
+        Calculate constructive dialogue score (D3.Constructive Dialogue).
 
-        # Score decreases with criticism
-        # 0 criticisms = 100, 3 = 70, 5+ = 40
-        if criticism_count == 0:
+        Inverse of CRITICISM + DEFENSIVENESS patterns.
+        Consolidated from old _calc_gentle_startup.
+        """
+        criticism_count = summary.four_horsemen_counts.get('criticism', 0)
+        defensiveness_count = summary.four_horsemen_counts.get('defensiveness', 0)
+        total_negative = criticism_count + defensiveness_count
+
+        # Score decreases with criticism and defensiveness
+        # 0 = 100, 3 = 70, 6+ = 40
+        if total_negative == 0:
             score = 100
-        elif criticism_count <= 2:
-            score = 100 - (criticism_count * 15)
-        elif criticism_count <= 5:
-            score = 70 - ((criticism_count - 2) * 10)
+        elif total_negative <= 2:
+            score = 100 - (total_negative * 15)
+        elif total_negative <= 5:
+            score = 70 - ((total_negative - 2) * 10)
         else:
-            score = max(20, 40 - ((criticism_count - 5) * 5))
+            score = max(20, 40 - ((total_negative - 5) * 4))
 
         if score >= 80:
-            insight = 'Pedidos feitos de forma gentil'
+            insight = 'Diálogo construtivo e não-defensivo'
         elif score >= 60:
-            insight = 'Alguns padrões de crítica detectados'
+            insight = 'Alguns padrões de crítica/defensividade'
         else:
-            insight = 'Muita crítica - usar "Eu sinto..." em vez de "Você é..."'
+            insight = 'Usar "Eu sinto..." e aceitar responsabilidade parcial'
 
         return {
             'score': round(score, 1),
             'criticismCount': criticism_count,
+            'defensivenessCount': defensiveness_count,
             'insight': insight
         }
 
-    def _calc_repair_attempts(self, summary: PatternSummary) -> Dict:
-        """Calculate repair attempts score."""
+    def _calc_conflict_repair(self, summary: PatternSummary) -> Dict:
+        """
+        Calculate conflict repair score (D3.Conflict Repair).
+
+        Uses REPAIR_PATTERNS exclusively.
+        NOTE: Repairs are NOT counted in D4.Emotional Reciprocity to avoid double-counting.
+        """
         repair_count = summary.positive_counts.get('repair_attempt', 0)
         total_negative = summary.total_negative
 
@@ -852,7 +1119,7 @@ class ScientificHealthScorer:
         elif score >= 60:
             insight = 'Reparações presentes'
         else:
-            insight = 'Mais reparações poderiam ajudar na resolução de conflitos'
+            insight = 'Mais reparações ajudariam na resolução de conflitos'
 
         return {
             'score': round(score, 1),
@@ -861,32 +1128,102 @@ class ScientificHealthScorer:
             'insight': insight
         }
 
-    def _calc_absence_contempt(self, summary: PatternSummary) -> Dict:
-        """Calculate absence of contempt score (most destructive horseman)."""
-        contempt_count = summary.four_horsemen_counts.get('contempt', 0)
+    def _calc_emotional_safety(self, summary: PatternSummary) -> Dict:
+        """
+        Calculate emotional safety score (D3.Emotional Safety).
 
-        # Any contempt is significant
-        if contempt_count == 0:
+        Inverse of CONTEMPT + STONEWALLING patterns.
+        Consolidated from old _calc_absence_contempt.
+
+        Contempt is the most destructive pattern (Gottman).
+        """
+        contempt_count = summary.four_horsemen_counts.get('contempt', 0)
+        stonewalling_count = summary.four_horsemen_counts.get('stonewalling', 0)
+
+        # Contempt is weighted more heavily (most destructive)
+        weighted_negative = contempt_count * 2 + stonewalling_count
+
+        # Score: 0 = 100, contempt heavily penalized
+        if weighted_negative == 0:
             score = 100
-            insight = 'Nenhum sinal de desprezo'
-        elif contempt_count == 1:
-            score = 70
-            insight = 'Pouco desprezo detectado'
+            insight = 'Ambiente emocionalmente seguro'
+        elif contempt_count == 0 and stonewalling_count <= 2:
+            score = 80
+            insight = 'Pouco stonewalling detectado'
+        elif contempt_count <= 1:
+            score = 60
+            insight = 'Desprezo detectado - atenção recomendada'
         elif contempt_count <= 3:
-            score = 50
-            insight = 'Desprezo presente - atenção recomendada'
+            score = 40
+            insight = 'Desprezo presente - construir cultura de apreciação'
         else:
-            score = max(20, 30 - (contempt_count * 2))
-            insight = 'Desprezo frequente - construir cultura de apreciação'
+            score = max(20, 30 - (contempt_count * 3))
+            insight = 'Desprezo frequente - intervenção urgente'
 
         return {
             'score': round(score, 1),
             'contemptCount': contempt_count,
+            'stonewallingCount': stonewalling_count,
             'insight': insight
         }
 
+    def _calc_supportive_responses(self, df: pd.DataFrame) -> Dict:
+        """
+        Calculate supportive responses score (D3.Supportive Responses).
+
+        Uses SUPPORT_PATTERNS + UNDERSTANDING_PATTERNS exclusively.
+        Merged from old _calc_understanding.
+        """
+        # EXCLUSIVE: SUPPORT + UNDERSTANDING patterns
+        support_patterns = PositivePatternDetector.SUPPORT_PATTERNS
+        understanding_patterns = PositivePatternDetector.UNDERSTANDING_PATTERNS
+        all_patterns = support_patterns + understanding_patterns
+        patterns_re = [re.compile(p, re.IGNORECASE) for p in all_patterns]
+
+        count = 0
+        for _, row in df.iterrows():
+            text = str(row.get(self.message_col, ''))
+            for pattern in patterns_re:
+                if pattern.search(text):
+                    count += 1
+                    break
+
+        total = len(df)
+        rate = count / total if total > 0 else 0
+
+        # Score: 5% support/understanding = 100, 2% = 60, 1% = 40
+        score = min(100, (rate / 0.05) * 100)
+        score = max(30, score)
+
+        if rate >= 0.05:
+            insight = 'Forte padrão de apoio e validação'
+        elif rate >= 0.02:
+            insight = 'Apoio moderado presente'
+        else:
+            insight = 'Mais apoio e validação fortaleceriam a conexão'
+
+        return {
+            'score': round(score, 1),
+            'rate': f'{rate*100:.1f}%',
+            'count': count,
+            'insight': insight
+        }
+
+    # Legacy aliases for backwards compatibility
+    def _calc_gentle_startup(self, summary: PatternSummary) -> Dict:
+        """Legacy alias for _calc_constructive_dialogue."""
+        return self._calc_constructive_dialogue(summary)
+
+    def _calc_repair_attempts(self, summary: PatternSummary) -> Dict:
+        """Legacy alias for _calc_conflict_repair."""
+        return self._calc_conflict_repair(summary)
+
+    def _calc_absence_contempt(self, summary: PatternSummary) -> Dict:
+        """Legacy alias for _calc_emotional_safety."""
+        return self._calc_emotional_safety(summary)
+
     def _calc_engagement(self, df: pd.DataFrame) -> Dict:
-        """Calculate engagement score (inverse of stonewalling)."""
+        """Calculate engagement score (response time analysis)."""
         # Calculate average response rate
         df_sorted = df.sort_values(self.datetime_col)
         df_sorted['prev_sender'] = df_sorted[self.sender_col].shift(1)
@@ -929,16 +1266,30 @@ class ScientificHealthScorer:
             'insight': f'Tempo médio de resposta: {round(avg_response)}min'
         }
 
-    def calculate_partnership_dynamics(self, df: pd.DataFrame = None) -> DimensionScore:
+    def _calc_understanding(self, df: pd.DataFrame) -> Dict:
+        """Legacy alias for _calc_supportive_responses."""
+        return self._calc_supportive_responses(df)
+
+    def calculate_partnership_equity(self, df: pd.DataFrame = None) -> DimensionScore:
         """
-        Calculate Partnership Dynamics dimension (20%).
+        Calculate Partnership Equity dimension (20%).
 
         Based on Equity Theory and Interdependence.
 
         Components:
-        - Equity (40%): Fair distribution of effort
-        - Coordination (30%): Logistical efficiency
-        - Shared Meaning (30%): Joint goals and values
+        - Contribution Balance (40%): Task sharing + initiative balance (merged)
+        - Coordination (35%): Task completion tracking
+        - Emotional Reciprocity (25%): Balance in emotional exchange (moved from D1)
+
+        Pattern Ownership (v2.0):
+        - Contribution Balance: Uses action_verbs exclusively
+        - Coordination: Uses completion_markers exclusively
+        - Emotional Reciprocity: Uses positivity ratio (EXCLUDING repairs from D3)
+
+        Key Changes:
+        - Shared Meaning moved to D2.Commitment Signals (uses FUTURE_PLANNING)
+        - Reciprocity moved here from D1 (was overlapping with D2)
+        - Task Sharing merged with Equity into Contribution Balance
         """
         if df is None:
             df = self.df
@@ -947,37 +1298,44 @@ class ScientificHealthScorer:
         if len(text_df) == 0:
             return DimensionScore(score=50.0)
 
-        # Component 1: Equity (40%)
-        equity = self._calc_equity(text_df)
+        # Component 1: Contribution Balance (40%) - merged Task Sharing + Equity
+        contribution_balance = self._calc_contribution_balance(text_df)
 
-        # Component 2: Coordination (30%)
+        # Component 2: Coordination (35%)
         coordination = self._calc_coordination(text_df)
 
-        # Component 3: Shared Meaning (30%)
-        shared_meaning = self._calc_shared_meaning(text_df)
+        # Component 3: Emotional Reciprocity (25%) - moved from D1
+        emotional_reciprocity = self._calc_emotional_reciprocity(text_df)
 
         # Calculate weighted score
         total_score = (
-            equity['score'] * 0.40 +
-            coordination['score'] * 0.30 +
-            shared_meaning['score'] * 0.30
+            contribution_balance['score'] * 0.40 +
+            coordination['score'] * 0.35 +
+            emotional_reciprocity['score'] * 0.25
         )
 
         insights = []
-        if equity['score'] >= 70:
-            insights.append('Boa equidade na relação')
-        if shared_meaning['score'] >= 70:
-            insights.append('Forte senso de objetivos compartilhados')
+        if contribution_balance['score'] >= 70:
+            insights.append('Boa equidade nas contribuições')
+        if coordination['score'] >= 70:
+            insights.append('Coordenação eficiente')
+        if emotional_reciprocity['score'] >= 70:
+            insights.append('Reciprocidade emocional equilibrada')
 
         return DimensionScore(
             score=round(total_score, 1),
             components={
-                'equity': equity,
+                'contributionBalance': contribution_balance,
                 'coordination': coordination,
-                'sharedMeaning': shared_meaning,
+                'emotionalReciprocity': emotional_reciprocity,
             },
             insights=insights
         )
+
+    # Legacy alias for backwards compatibility
+    def calculate_partnership_dynamics(self, df: pd.DataFrame = None) -> DimensionScore:
+        """Legacy alias for calculate_partnership_equity."""
+        return self.calculate_partnership_equity(df)
 
     def _calc_equity(self, df: pd.DataFrame) -> Dict:
         """Calculate equity score (message volume + initiative balance)."""
@@ -1070,86 +1428,34 @@ class ScientificHealthScorer:
         }
 
     def _calc_shared_meaning(self, df: pd.DataFrame) -> Dict:
-        """Calculate shared meaning score (future planning, shared references)."""
-        future_patterns = PositivePatternDetector.FUTURE_PLANNING_PATTERNS
-        future_re = [re.compile(p, re.IGNORECASE) for p in future_patterns]
+        """
+        Legacy method - Shared Meaning is now part of D2.Commitment Signals.
 
-        future_count = 0
-        for _, row in df.iterrows():
-            text = str(row.get(self.message_col, ''))
-            for pattern in future_re:
-                if pattern.search(text):
-                    future_count += 1
-                    break
+        In v2.0, FUTURE_PLANNING_PATTERNS are used exclusively by
+        _calc_commitment_signals in the Affection & Commitment dimension.
 
-        total_days = (df[self.datetime_col].max() - df[self.datetime_col].min()).days
-        weeks = max(total_days / 7, 1)
-        per_week = future_count / weeks
-
-        # Score: 5+ per week = 100, 2 = 70, 0 = 40
-        if per_week >= 5:
-            score = 100
-        elif per_week >= 2:
-            score = 70 + (per_week - 2) * 10
-        elif per_week >= 1:
-            score = 50 + (per_week - 1) * 20
-        else:
-            score = 40 + (per_week * 10)
-
-        if per_week >= 3:
-            insight = 'Forte planejamento conjunto'
-        elif per_week >= 1:
-            insight = 'Planejamento moderado para o futuro'
-        else:
-            insight = 'Mais planejamento conjunto poderia fortalecer conexão'
-
-        return {
-            'score': round(score, 1),
-            'perWeek': round(per_week, 1),
-            'insight': insight
-        }
+        This method is kept for backwards compatibility but redirects to
+        commitment signals calculation.
+        """
+        return self._calc_commitment_signals(df)
 
     def calculate_overall_score(self) -> HealthScoreResult:
         """
         Calculate overall health score with all dimensions.
 
-        Uses temporal weighting:
-        - Recent (30 days): 50%
-        - Medium-term (90 days): 30%
-        - Long-term (all history): 20%
+        v2.1: Uses only last 30 days for faster score responsiveness.
+        This allows scores to change quickly as relationship patterns evolve.
+
+        Dimensions (v2.0):
+        - Emotional Connection (30%)
+        - Affection & Commitment (25%)
+        - Communication Health (25%)
+        - Partnership Equity (20%)
         """
-        temporal_dfs = self._get_temporal_dfs()
+        # Get last 30 days only
+        scoring_df = self._get_scoring_df()
 
-        # Calculate scores for each temporal window
-        temporal_scores = {}
-        for period, weight in self.TEMPORAL_WEIGHTS.items():
-            period_df = temporal_dfs.get(period, pd.DataFrame())
-            if len(period_df) == 0:
-                continue
-
-            connection = self.calculate_connection_quality(period_df)
-            maintenance = self.calculate_relationship_maintenance(period_df)
-            communication = self.calculate_communication_health(period_df)
-            partnership = self.calculate_partnership_dynamics(period_df)
-
-            period_overall = (
-                connection.score * self.DIMENSION_WEIGHTS['connection_quality'] +
-                maintenance.score * self.DIMENSION_WEIGHTS['relationship_maintenance'] +
-                communication.score * self.DIMENSION_WEIGHTS['communication_health'] +
-                partnership.score * self.DIMENSION_WEIGHTS['partnership_dynamics']
-            )
-
-            temporal_scores[period] = {
-                'overall': period_overall,
-                'weight': weight,
-                'connection': connection,
-                'maintenance': maintenance,
-                'communication': communication,
-                'partnership': partnership,
-            }
-
-        # Calculate weighted overall score
-        if not temporal_scores:
+        if len(scoring_df) == 0:
             return HealthScoreResult(
                 overall=50.0,
                 label='Dados Insuficientes',
@@ -1158,41 +1464,47 @@ class ScientificHealthScorer:
                 trend='N/A'
             )
 
-        total_weight = sum(ts['weight'] for ts in temporal_scores.values())
-        weighted_overall = sum(
-            ts['overall'] * ts['weight']
-            for ts in temporal_scores.values()
-        ) / total_weight
+        # Calculate dimension scores for the scoring window
+        emotional_connection = self.calculate_emotional_connection(scoring_df)
+        affection_commitment = self.calculate_affection_commitment(scoring_df)
+        communication = self.calculate_communication_health(scoring_df)
+        partnership_equity = self.calculate_partnership_equity(scoring_df)
 
-        # Use recent period for detailed dimensions
-        recent = temporal_scores.get('recent_30d', list(temporal_scores.values())[0])
+        # Calculate overall score
+        overall_score = (
+            emotional_connection.score * self.DIMENSION_WEIGHTS['emotional_connection'] +
+            affection_commitment.score * self.DIMENSION_WEIGHTS['affection_commitment'] +
+            communication.score * self.DIMENSION_WEIGHTS['communication_health'] +
+            partnership_equity.score * self.DIMENSION_WEIGHTS['partnership_equity']
+        )
 
-        # Calculate trend
-        recent_score = temporal_scores.get('recent_30d', {}).get('overall', weighted_overall)
-        medium_score = temporal_scores.get('medium_90d', {}).get('overall')
-
-        if medium_score:
-            trend_diff = recent_score - medium_score
-            trend = f'+{trend_diff:.0f}' if trend_diff >= 0 else f'{trend_diff:.0f}'
-            trend += ' vs mês anterior'
-        else:
-            trend = 'Dados insuficientes para tendência'
+        # Store for insights compilation
+        recent = {
+            'overall': overall_score,
+            'emotionalConnection': emotional_connection,
+            'affectionCommitment': affection_commitment,
+            'communication': communication,
+            'partnershipEquity': partnership_equity,
+        }
 
         # Get labels
-        label_pt, label_en = self._get_label(weighted_overall)
+        label_pt, label_en = self._get_label(overall_score)
 
-        # Calculate confidence based on data volume
-        total_messages = len(self.df)
-        if total_messages >= 1000:
+        # Calculate confidence based on messages in scoring window
+        window_messages = len(scoring_df)
+        if window_messages >= 500:
             confidence = 0.95
-        elif total_messages >= 500:
+        elif window_messages >= 200:
             confidence = 0.85
-        elif total_messages >= 200:
+        elif window_messages >= 100:
             confidence = 0.75
-        elif total_messages >= 50:
+        elif window_messages >= 30:
             confidence = 0.60
         else:
             confidence = 0.40
+
+        # Trend info (v2.1 - simplified)
+        trend = f'Baseado nos últimos {self.SCORING_WINDOW_DAYS} dias'
 
         # Compile insights
         all_insights = self._compile_insights(recent)
@@ -1207,44 +1519,51 @@ class ScientificHealthScorer:
             confidence=round(confidence, 2),
             trend=trend,
             dimensions={
-                'connectionQuality': recent['connection'],
-                'relationshipMaintenance': recent['maintenance'],
+                # v2.0 dimension names
+                'emotionalConnection': recent['emotionalConnection'],
+                'affectionCommitment': recent['affectionCommitment'],
                 'communicationHealth': recent['communication'],
-                'partnershipDynamics': recent['partnership'],
+                'partnershipEquity': recent['partnershipEquity'],
             },
             insights=all_insights,
             alerts=alerts
         )
 
     def _compile_insights(self, recent: Dict) -> Dict:
-        """Compile insights from dimension scores."""
+        """Compile insights from dimension scores (v2.0 dimension names)."""
         strengths = []
         opportunities = []
 
-        # Analyze connection quality
-        conn = recent['connection']
+        # Analyze emotional connection (v2.0)
+        conn = recent['emotionalConnection']
         if conn.score >= 70:
             strengths.append({
-                'dimension': 'connectionQuality',
-                'finding': 'Boa qualidade de conexão e responsividade',
+                'dimension': 'emotionalConnection',
+                'finding': 'Boa conexão emocional e responsividade',
                 'evidence': conn.insights[0] if conn.insights else 'Pontuação alta em responsividade'
             })
         elif conn.score < 55:
             opportunities.append({
-                'dimension': 'connectionQuality',
+                'dimension': 'emotionalConnection',
                 'finding': 'Qualidade de resposta pode melhorar',
                 'suggestion': 'Quando parceiro compartilha sentimentos, tente fazer perguntas de acompanhamento',
                 'impact': 'Alto - preditor central de intimidade'
             })
 
-        # Analyze maintenance
-        maint = recent['maintenance']
-        ratio = maint.components.get('positivity', {}).get('ratio', '0:1')
-        if maint.score >= 70:
+        # Analyze affection & commitment (v2.0)
+        affection = recent['affectionCommitment']
+        if affection.score >= 70:
             strengths.append({
-                'dimension': 'relationshipMaintenance',
-                'finding': f'Proporção positivo/negativo de {ratio} próxima do ideal de 5:1',
-                'evidence': 'Últimos 30 dias mostram positividade consistente'
+                'dimension': 'affectionCommitment',
+                'finding': 'Forte expressão de afeto e compromisso',
+                'evidence': 'Últimos 30 dias mostram afeto consistente'
+            })
+        elif affection.score < 55:
+            opportunities.append({
+                'dimension': 'affectionCommitment',
+                'finding': 'Expressões de afeto podem aumentar',
+                'suggestion': 'Expressar gratidão específica e carinho regularmente',
+                'impact': 'Médio - fortalece vínculo emocional'
             })
 
         # Analyze communication
@@ -1256,9 +1575,9 @@ class ScientificHealthScorer:
                 'evidence': 'Baixa presença dos Quatro Cavaleiros de Gottman'
             })
         elif comm.score < 55:
-            # Check which horseman is problematic
-            contempt = comm.components.get('absenceOfContempt', {})
-            if contempt.get('contemptCount', 0) > 0:
+            # Check which patterns are problematic
+            safety = comm.components.get('emotionalSafety', {})
+            if safety.get('contemptCount', 0) > 0:
                 opportunities.append({
                     'dimension': 'communicationHealth',
                     'finding': 'Desprezo detectado - padrão mais destrutivo',
@@ -1266,13 +1585,20 @@ class ScientificHealthScorer:
                     'impact': 'Crítico - preditor mais forte de dissolução'
                 })
 
-        # Analyze partnership
-        partner = recent['partnership']
+        # Analyze partnership equity (v2.0)
+        partner = recent['partnershipEquity']
         if partner.score >= 70:
             strengths.append({
-                'dimension': 'partnershipDynamics',
-                'finding': 'Boa dinâmica de parceria e equidade',
+                'dimension': 'partnershipEquity',
+                'finding': 'Boa equidade na parceria',
                 'evidence': 'Distribuição equilibrada de responsabilidades'
+            })
+        elif partner.score < 55:
+            opportunities.append({
+                'dimension': 'partnershipEquity',
+                'finding': 'Assimetria nas contribuições',
+                'suggestion': 'Equilibrar tarefas e iniciativas',
+                'impact': 'Médio - afeta senso de justiça'
             })
 
         return {
@@ -1281,13 +1607,16 @@ class ScientificHealthScorer:
         }
 
     def _compile_alerts(self, recent: Dict) -> List[Dict]:
-        """Compile alerts from pattern analysis."""
+        """Compile alerts from pattern analysis (v2.0 structure)."""
         alerts = []
 
-        # Check communication for Four Horsemen
+        # Check communication for Four Horsemen (v2.0 component names)
         comm = recent['communication']
-        contempt_count = comm.components.get('absenceOfContempt', {}).get('contemptCount', 0)
-        criticism_count = comm.components.get('gentleStartup', {}).get('criticismCount', 0)
+
+        # Check emotional safety (contempt + stonewalling)
+        safety = comm.components.get('emotionalSafety', {})
+        contempt_count = safety.get('contemptCount', 0)
+        stonewalling_count = safety.get('stonewallingCount', 0)
 
         if contempt_count >= 2:
             alerts.append({
@@ -1297,17 +1626,31 @@ class ScientificHealthScorer:
                 'antidote': 'Expressar gratidão específica diariamente'
             })
 
+        # Check constructive dialogue (criticism + defensiveness)
+        dialogue = comm.components.get('constructiveDialogue', {})
+        criticism_count = dialogue.get('criticismCount', 0)
+        defensiveness_count = dialogue.get('defensivenessCount', 0)
+
         if criticism_count >= 3:
             alerts.append({
                 'pattern': 'criticism',
-                'frequency': f'{criticism_count} instâncias nos últimos 7 dias',
-                'context': 'Aparece durante coordenação de tarefas',
+                'frequency': f'{criticism_count} instâncias',
+                'context': 'Detectado durante coordenação de tarefas',
                 'antidote': "Use 'Eu sinto...' em vez de 'Você sempre...'"
             })
 
-        # Check positivity ratio
-        maint = recent['maintenance']
-        ratio_str = maint.components.get('positivity', {}).get('ratio', '5:1')
+        if defensiveness_count >= 3:
+            alerts.append({
+                'pattern': 'defensiveness',
+                'frequency': f'{defensiveness_count} instâncias',
+                'context': 'Detectado em discussões',
+                'antidote': 'Aceite responsabilidade parcial mesmo que discorde'
+            })
+
+        # Check emotional reciprocity (v2.0 - now in partnershipEquity)
+        partner = recent['partnershipEquity']
+        reciprocity = partner.components.get('emotionalReciprocity', {})
+        ratio_str = reciprocity.get('ratio', '5:1')
         try:
             ratio = float(ratio_str.split(':')[0])
             if ratio < 3:
@@ -1348,10 +1691,33 @@ class ScientificHealthScorer:
             },
             'generated': result.generated,
             'methodology': {
-                'framework': 'Hybrid Gottman + Interpersonal Process Model + Maintenance Behaviors',
+                'framework': 'NAVI v2.1 - Restructured Dimensions (30-Day Window)',
+                'version': '2.1',
                 'scale': '1-100',
-                'temporalWeights': self.TEMPORAL_WEIGHTS,
+                'scoringWindow': f'{self.SCORING_WINDOW_DAYS} days',
                 'dimensionWeights': self.DIMENSION_WEIGHTS,
+                'dimensionStructure': {
+                    'emotionalConnection': {
+                        'weight': 0.30,
+                        'theory': 'Interpersonal Process Model (Reis & Shaver)',
+                        'components': ['responsiveness', 'vulnerability', 'attunement']
+                    },
+                    'affectionCommitment': {
+                        'weight': 0.25,
+                        'theory': 'Stafford & Canary Maintenance + Gottman Fondness',
+                        'components': ['expressedAffection', 'commitmentSignals', 'appreciation']
+                    },
+                    'communicationHealth': {
+                        'weight': 0.25,
+                        'theory': 'Gottman Four Horsemen (inverse)',
+                        'components': ['constructiveDialogue', 'conflictRepair', 'emotionalSafety', 'supportiveResponses']
+                    },
+                    'partnershipEquity': {
+                        'weight': 0.20,
+                        'theory': 'Equity Theory + Interdependence',
+                        'components': ['contributionBalance', 'coordination', 'emotionalReciprocity']
+                    }
+                },
                 'references': [
                     'Gottman, J. M. (1994). What Predicts Divorce?',
                     'Reis, H. T., & Shaver, P. (1988). Intimacy as an interpersonal process',

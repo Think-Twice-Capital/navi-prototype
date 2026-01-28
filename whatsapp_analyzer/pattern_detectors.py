@@ -7,6 +7,32 @@ Implements detection patterns based on relationship science research:
 - Responsiveness and emotional expression patterns
 - Communication health markers
 
+PATTERN OWNERSHIP (v2.0 - No Overlaps):
+=====================================
+Each pattern set is used EXCLUSIVELY by one dimension/sub-dimension
+in scientific_scoring.py to eliminate score inflation from double-counting.
+
+D1. Emotional Connection (30%):
+   - D1.Responsiveness: Response quality metrics (no pattern overlap)
+   - D1.Vulnerability: DISCLOSURE_PATTERNS exclusive
+   - D1.Attunement: ACTIVE_LISTENING_PATTERNS exclusive
+
+D2. Affection & Commitment (25%):
+   - D2.Affection: AFFECTION_PATTERNS exclusive
+   - D2.Commitment: ASSURANCE_PATTERNS + FUTURE_PLANNING_PATTERNS exclusive
+   - D2.Appreciation: GRATITUDE_PATTERNS exclusive
+
+D3. Communication Health (25%):
+   - D3.Constructive Dialogue: CRITICISM_PATTERNS + DEFENSIVENESS_PATTERNS (inverse)
+   - D3.Conflict Repair: REPAIR_PATTERNS exclusive
+   - D3.Emotional Safety: CONTEMPT_PATTERNS + STONEWALLING (inverse)
+   - D3.Supportive Responses: SUPPORT_PATTERNS + UNDERSTANDING_PATTERNS exclusive
+
+D4. Partnership Equity (20%):
+   - D4.Contribution Balance: action_verbs (task mentions, defined in scientific_scoring.py)
+   - D4.Coordination: completion_markers (defined in navi_output.py)
+   - D4.Emotional Reciprocity: Positive/negative balance (EXCLUDING repairs to avoid double-counting)
+
 LLM Enhancement (Phase 1):
 - Optional LLM validation for contempt detection (catches sarcasm)
 - Optional LLM validation for repair attempt authenticity
@@ -67,9 +93,15 @@ class GottmanPatternDetector:
     2. Contempt - Showing superiority/disrespect
     3. Defensiveness - Playing victim, counter-attacking
     4. Stonewalling - Withdrawing, shutting down
+
+    EXCLUSIVE OWNERSHIP (v2.0):
+    - CRITICISM_PATTERNS → D3.Constructive Dialogue (inverse)
+    - CONTEMPT_PATTERNS → D3.Emotional Safety (inverse)
+    - DEFENSIVENESS_PATTERNS → D3.Constructive Dialogue (inverse)
+    - STONEWALLING_PHRASES → D3.Emotional Safety (inverse)
     """
 
-    # Criticism patterns (PT-BR)
+    # Criticism patterns (PT-BR) - EXCLUSIVE: D3.Constructive Dialogue
     CRITICISM_PATTERNS = [
         r'\bvocê sempre\b',
         r'\bvocê nunca\b',
@@ -85,7 +117,8 @@ class GottmanPatternDetector:
         r'\bvocê é impossível\b',
     ]
 
-    # Contempt patterns (PT-BR) - Most destructive horseman
+    # Contempt patterns (PT-BR) - EXCLUSIVE: D3.Emotional Safety
+    # Most destructive horseman - double weight in scoring
     CONTEMPT_PATTERNS = [
         r'\bgrande coisa\b',
         r'\btanto faz\b',
@@ -104,7 +137,7 @@ class GottmanPatternDetector:
         r'\btá bom né\b',  # Dismissive
     ]
 
-    # Defensiveness patterns (PT-BR)
+    # Defensiveness patterns (PT-BR) - EXCLUSIVE: D3.Constructive Dialogue
     DEFENSIVENESS_PATTERNS = [
         r'\bmas você também\b',
         r'\bnão é minha culpa\b',
@@ -121,7 +154,7 @@ class GottmanPatternDetector:
         r'\bnão é bem assim\b',
     ]
 
-    # Stonewalling indicators
+    # Stonewalling indicators - EXCLUSIVE: D3.Emotional Safety
     STONEWALLING_PHRASES = [
         r'\btanto faz\b',
         r'\bfaz o que você quiser\b',
@@ -383,9 +416,21 @@ class PositivePatternDetector:
     - Gottman's repair attempts
     - Stafford & Canary's maintenance behaviors
     - Reis & Shaver's responsiveness model
+
+    EXCLUSIVE OWNERSHIP (v2.0):
+    - REPAIR_PATTERNS → D3.Conflict Repair
+    - AFFECTION_PATTERNS → D2.Expressed Affection
+    - GRATITUDE_PATTERNS → D2.Appreciation
+    - SUPPORT_PATTERNS → D3.Supportive Responses
+    - FUTURE_PLANNING_PATTERNS → D2.Commitment Signals
+    - ACTIVE_LISTENING_PATTERNS → D1.Attunement
+    - DISCLOSURE_PATTERNS → D1.Vulnerability
+    - UNDERSTANDING_PATTERNS → D3.Supportive Responses
+    - ASSURANCE_PATTERNS → D2.Commitment Signals
     """
 
-    # Repair attempt patterns (PT-BR)
+    # Repair attempt patterns (PT-BR) - EXCLUSIVE: D3.Conflict Repair
+    # NOTE: Repairs are excluded from D4.Emotional Reciprocity to avoid double-counting
     REPAIR_PATTERNS = [
         r'\bdesculpa\b',
         r'\bperdão\b',
@@ -404,7 +449,7 @@ class PositivePatternDetector:
         r'\bera brincadeira\b',
     ]
 
-    # Affection expression patterns (PT-BR)
+    # Affection expression patterns (PT-BR) - EXCLUSIVE: D2.Expressed Affection
     AFFECTION_PATTERNS = [
         r'\bte amo\b',
         r'\bamo você\b',
@@ -429,7 +474,8 @@ class PositivePatternDetector:
         r'\bpaixão\b',
     ]
 
-    # Gratitude patterns (PT-BR)
+    # Gratitude patterns (PT-BR) - EXCLUSIVE: D2.Appreciation
+    # Key antidote for contempt (Gottman)
     GRATITUDE_PATTERNS = [
         r'\bobrigad[oa]\s+por\b',
         r'\bmuito obrigad[oa]\b',
@@ -442,7 +488,7 @@ class PositivePatternDetector:
         r'\bsorte de ter você\b',
     ]
 
-    # Supportive response patterns (PT-BR)
+    # Supportive response patterns (PT-BR) - EXCLUSIVE: D3.Supportive Responses
     SUPPORT_PATTERNS = [
         r'\bestou aqui\b',
         r'\bconte comigo\b',
@@ -459,7 +505,8 @@ class PositivePatternDetector:
         r'\bdeve ser difícil\b',
     ]
 
-    # Future planning patterns (PT-BR) - Shared meaning
+    # Future planning patterns (PT-BR) - EXCLUSIVE: D2.Commitment Signals
+    # Merged from old D4.Shared Meaning in v2.0
     FUTURE_PLANNING_PATTERNS = [
         r'\bvamos\s+(?:fazer|planejar|marcar)\b',
         r'\bnosso\s+(?:plano|projeto|futuro)\b',
@@ -471,7 +518,7 @@ class PositivePatternDetector:
         r'\bquero\s+(?:envelhecer|ficar|estar)\s+com você\b',
     ]
 
-    # Active listening patterns (PT-BR)
+    # Active listening patterns (PT-BR) - EXCLUSIVE: D1.Attunement
     ACTIVE_LISTENING_PATTERNS = [
         r'\bcomo foi\b',
         r'\bme conta\b',
@@ -485,7 +532,7 @@ class PositivePatternDetector:
         r'\bsério\?\s+(?:me conta|e aí)\b',
     ]
 
-    # Deep disclosure patterns (vulnerability markers)
+    # Deep disclosure patterns (vulnerability markers) - EXCLUSIVE: D1.Vulnerability
     DISCLOSURE_PATTERNS = [
         r'\beu sinto\b',
         r'\bestou com medo\b',
@@ -501,7 +548,7 @@ class PositivePatternDetector:
         r'\bna verdade\b.*(?:sinto|penso|acho)\b',
     ]
 
-    # Understanding/validation patterns
+    # Understanding/validation patterns - EXCLUSIVE: D3.Supportive Responses
     UNDERSTANDING_PATTERNS = [
         r'\bfaz sentido\b',
         r'\bentendo você\b',
@@ -514,7 +561,7 @@ class PositivePatternDetector:
         r'\bnormal sentir\b',
     ]
 
-    # Assurance patterns (commitment)
+    # Assurance patterns (commitment) - EXCLUSIVE: D2.Commitment Signals
     ASSURANCE_PATTERNS = [
         r'\bsempre vou\b',
         r'\bnunca vou te deixar\b',

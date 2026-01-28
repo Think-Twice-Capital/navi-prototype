@@ -313,18 +313,15 @@ The health score provides an overall relationship health metric from 0-100 based
   },
 
   "methodology": {
-    "framework": "Hybrid Gottman + Interpersonal Process Model + Maintenance Behaviors",
+    "framework": "NAVI v2.1 - Restructured Dimensions (30-Day Window)",
+    "version": "2.1",
     "scale": "1-100",
-    "temporalWeights": {
-      "recent_30d": 0.50,
-      "medium_90d": 0.30,
-      "longterm": 0.20
-    },
+    "scoringWindow": "30 days",
     "dimensionWeights": {
-      "connection_quality": 0.30,
-      "relationship_maintenance": 0.25,
+      "emotional_connection": 0.30,
+      "affection_commitment": 0.25,
       "communication_health": 0.25,
-      "partnership_dynamics": 0.20
+      "partnership_equity": 0.20
     }
   }
 }
@@ -1323,11 +1320,13 @@ Example: 7.5/10 ≈ 75/100
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.1 | 2026-01-27 | 30-day only scoring window for faster score responsiveness |
+| 2.1 | 2026-01-27 | Removed multi-period temporal weighting |
+| 2.0 | 2026-01-26 | Restructured 4-dimension model to eliminate pattern overlaps |
+| 2.0 | 2026-01-26 | New dimension names (Emotional Connection, Affection & Commitment, etc.) |
 | 2.0 | 2026-01-26 | Scientific framework redesign with Gottman, Reis & Shaver, Stafford & Canary |
-| 2.0 | 2026-01-26 | New 4-dimension model (Connection, Maintenance, Communication, Partnership) |
 | 2.0 | 2026-01-26 | Scale changed from 1-10 to 0-100 for granularity |
 | 2.0 | 2026-01-26 | Added Four Horsemen detection with antidotes |
-| 2.0 | 2026-01-26 | Added temporal weighting (30d/90d/longterm) |
 | 2.0 | 2026-01-26 | Added research-backed insights and recommendations |
 | 1.0 | 2024-01-20 | Initial specification |
 
