@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NAVI - Relationship Health</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        /* Phone Frame */
+        .phone-frame {
+            width: 390px;
+            max-width: 100%;
+            background: var(--bg-primary);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+
+        .phone-screen {
+            padding-top: 50px;
+            height: 844px;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .phone-screen::-webkit-scrollbar {
+            display: none;
+        }
+
+        .app-content {
+            padding: 0 20px 100px;
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            margin-bottom: 20px;
+        }
+
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .app-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Hero Score */
+        .hero-score {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 32px 24px;
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-glow {
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .score-number {
+            font-size: 80px;
+            font-weight: 700;
+            line-height: 1;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        .score-label {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 8px 0 16px;
+        }
+
+        .score-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .score-bar-wrapper {
+            margin-top: 24px;
+        }
+
+        .score-bar {
+            height: 8px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            overflow: visible;
+            position: relative;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #ef4444, #f59e0b 50%, #10b981);
+            transition: width 1.5s ease-out;
+        }
+
+        .score-bar-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: left 1.5s ease-out;
+        }
+
+        .score-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .score-meta {
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 24px 0 12px;
+        }
+
+        /* Dimensions */
+        .dimensions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .dim-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 16px;
+            transition: transform 0.2s;
+        }
+
+        .dim-card:active {
+            transform: scale(0.98);
+        }
+
+        .dim-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .dim-icon {
+            font-size: 18px;
+        }
+
+        .dim-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .dim-score {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .dim-insight {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .dim-bar {
+            height: 4px;
+            background: var(--bg-card);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .dim-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 1s ease-out;
+        }
+
+        /* Horsemen */
+        .horsemen-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 8px;
+        }
+
+        .horsemen-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .horsemen-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .horsemen-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .horseman {
+            text-align: center;
+            padding: 12px 4px;
+            background: var(--bg-card);
+            border-radius: 12px;
+        }
+
+        .horseman-name {
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .horseman-count {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .horseman-label {
+            font-size: 9px;
+            margin-top: 4px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .horseman-label.safe { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .horseman-label.low { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .horseman-label.medium { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .horseman-label.high { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .horsemen-scale {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--bg-card);
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            font-size: 10px;
+        }
+
+        .scale-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+        }
+
+        .scale-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* Weekly Pulse */
+        .pulse-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 8px;
+        }
+
+        .pulse-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .pulse-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .pulse-period {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .pulse-chart {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 100px;
+            gap: 4px;
+        }
+
+        .pulse-week {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pulse-bar {
+            width: 100%;
+            max-width: 28px;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.5s ease-out;
+            position: relative;
+        }
+
+        .pulse-bar.conflict::after {
+            content: '⚡';
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+        }
+
+        .pulse-score {
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .pulse-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* LLM Insights */
+        .llm-section {
+            margin-bottom: 8px;
+        }
+
+        .llm-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .llm-badge {
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .llm-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .llm-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .llm-card-icon {
+            font-size: 16px;
+        }
+
+        .llm-card-type {
+            font-size: 11px;
+            color: var(--accent-light);
+            font-weight: 500;
+        }
+
+        .llm-message {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            font-style: italic;
+            color: var(--text-primary);
+        }
+
+        .llm-result {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .llm-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .llm-tag.positive { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .llm-tag.negative { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .llm-tag.neutral { background: rgba(148, 163, 184, 0.2); color: var(--text-secondary); }
+
+        .llm-reasoning {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: 8px;
+        }
+
+        .llm-cost {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 16px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+        }
+
+        /* Insights */
+        .insight-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border-left: 3px solid;
+        }
+
+        .insight-card.strength { border-color: var(--success); }
+        .insight-card.opportunity { border-color: var(--warning); }
+        .insight-card.alert { border-color: var(--danger); }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .insight-icon { font-size: 14px; }
+
+        .insight-title {
+            font-size: 13px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .insight-body {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .insight-antidote {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            font-size: 11px;
+        }
+
+        .insight-antidote strong {
+            color: var(--accent-light);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--bg-card);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 10px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-icon {
+            font-size: 22px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--bg-card);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .delay-4 { animation-delay: 0.4s; opacity: 0; }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+            <div class="app-content" id="appContent">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Carregando análise...</p>
+                </div>
+            </div>
+
+            <nav class="bottom-nav">
+                <div class="nav-item">
+                    <span class="nav-icon">💬</span>
+                    <span>Chat</span>
+                </div>
+                <div class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span>Saúde</span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-icon">🎯</span>
+                    <span>Metas</span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Config</span>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const response = await fetch('data/health_data.json');
+                const data = await response.json();
+                renderApp(data);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('appContent').innerHTML = `
+                    <div class="loading">
+                        <p>Erro ao carregar dados</p>
+                        <p style="font-size: 11px; margin-top: 8px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderApp(data) {
+            const health = data.healthScore;
+            const content = document.getElementById('appContent');
+
+            content.innerHTML = `
+                <!-- Header -->
+                <header class="app-header animate-in">
+                    <div>
+                        <div class="app-title">NAVI</div>
+                        <div class="app-subtitle">Saúde do Relacionamento · Últimos 30 dias</div>
+                    </div>
+                </header>
+
+                <!-- Hero Score -->
+                <div class="hero-score animate-in delay-1">
+                    <div class="score-glow"></div>
+                    <div class="score-number" id="scoreNumber">0</div>
+                    <div class="score-label">${health.label}</div>
+                    <div class="score-trend">
+                        <span>↑</span> ${health.trend}
+                    </div>
+                    <div class="score-bar-wrapper">
+                        <div class="score-bar">
+                            <div class="score-bar-fill" id="scoreBarFill" style="width: 100%"></div>
+                            <div class="score-bar-thumb" id="scoreThumb" style="left: 0%"></div>
+                        </div>
+                        <div class="score-scale">
+                            <span>0</span>
+                            <span>25</span>
+                            <span>50</span>
+                            <span>75</span>
+                            <span>100</span>
+                        </div>
+                    </div>
+                    <div class="score-meta">
+                        ${data.metadata.totalMessages.toLocaleString()} mensagens · ${Math.round(health.confidence * 100)}% confiança
+                    </div>
+                </div>
+
+                <!-- Dimensions -->
+                <div class="section-title animate-in delay-2">4 Dimensões</div>
+                <div class="dimensions-grid animate-in delay-2">
+                    ${renderDimensions(health.dimensions)}
+                </div>
+
+                <!-- Horsemen -->
+                <div class="section-title animate-in delay-3">4 Cavaleiros (Gottman)</div>
+                <div class="horsemen-container animate-in delay-3">
+                    <div class="horsemen-subtitle">Padrões que predizem problemas com 90%+ de precisão</div>
+                    <div class="horsemen-grid">
+                        ${renderHorsemen(health.dimensions.communicationHealth.components)}
+                    </div>
+                    <div class="horsemen-scale">
+                        <div class="scale-item"><div class="scale-dot" style="background: var(--success)"></div> 0 = Saudável</div>
+                        <div class="scale-item"><div class="scale-dot" style="background: #60a5fa"></div> 1-2 = Atenção</div>
+                        <div class="scale-item"><div class="scale-dot" style="background: var(--warning)"></div> 3-4 = Alerta</div>
+                        <div class="scale-item"><div class="scale-dot" style="background: var(--danger)"></div> 5+ = Crítico</div>
+                    </div>
+                </div>
+
+                <!-- Weekly Pulse -->
+                <div class="section-title animate-in delay-4">Pulso Semanal</div>
+                <div class="pulse-card animate-in delay-4">
+                    <div class="pulse-header">
+                        <span class="pulse-title">Últimas 12 Semanas</span>
+                        <span class="pulse-period">Pontuação por semana</span>
+                    </div>
+                    <div class="pulse-chart" id="pulseChart">
+                        ${renderPulse(data.weeklyPulse)}
+                    </div>
+                </div>
+
+                <!-- LLM Insights -->
+                ${data.llmAnalysis?.enabled ? renderLLMInsights(data.llmAnalysis) : ''}
+
+                <!-- Insights -->
+                <div class="section-title">Pontos Fortes</div>
+                <div class="insights-section">
+                    ${renderStrengths(health.insights)}
+                </div>
+
+                <div class="section-title">Áreas para Crescer</div>
+                <div class="insights-section">
+                    ${renderOpportunities(health.insights, health.alerts)}
+                </div>
+            `;
+
+            // Animate score
+            animateScore(health.overall);
+        }
+
+        function animateScore(target) {
+            const el = document.getElementById('scoreNumber');
+            const thumb = document.getElementById('scoreThumb');
+            let current = 0;
+            const duration = 1500;
+            const start = performance.now();
+
+            function update(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                current = target * eased;
+
+                el.textContent = Math.round(current);
+                thumb.style.left = `${current}%`;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function renderDimensions(dims) {
+            const config = [
+                { key: 'emotionalConnection', icon: '💕', name: 'Conexão Emocional', color: '#ec4899' },
+                { key: 'affectionCommitment', icon: '🌱', name: 'Afeto & Compromisso', color: '#10b981' },
+                { key: 'communicationHealth', icon: '💬', name: 'Comunicação', color: '#6366f1' },
+                { key: 'partnershipEquity', icon: '🤝', name: 'Equidade', color: '#f59e0b' },
+            ];
+
+            return config.map(c => {
+                const d = dims[c.key];
+                const insight = d.insights?.[0] || Object.values(d.components)[0]?.insight || '';
+                return `
+                    <div class="dim-card">
+                        <div class="dim-header">
+                            <span class="dim-icon">${c.icon}</span>
+                            <span class="dim-name">${c.name}</span>
+                        </div>
+                        <div class="dim-score" style="color: ${c.color}">${Math.round(d.score)}</div>
+                        <div class="dim-insight">${insight.substring(0, 60)}${insight.length > 60 ? '...' : ''}</div>
+                        <div class="dim-bar">
+                            <div class="dim-bar-fill" style="width: ${d.score}%; background: ${c.color}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderHorsemen(components) {
+            // v2.1 component names: constructiveDialogue, emotionalSafety
+            const horsemen = [
+                { name: 'Crítica', count: components.constructiveDialogue?.criticismCount || 0 },
+                { name: 'Desprezo', count: components.emotionalSafety?.contemptCount || 0 },
+                { name: 'Defensiva', count: components.constructiveDialogue?.defensivenessCount || 0 },
+                { name: 'Evasão', count: components.emotionalSafety?.stonewallingCount || 0 },
+            ];
+
+            return horsemen.map(h => {
+                let labelClass = 'safe';
+                let labelText = 'Saudável';
+                let color = 'var(--success)';
+
+                if (h.count >= 5) {
+                    labelClass = 'high'; labelText = 'Crítico'; color = 'var(--danger)';
+                } else if (h.count >= 3) {
+                    labelClass = 'medium'; labelText = 'Alerta'; color = 'var(--warning)';
+                } else if (h.count >= 1) {
+                    labelClass = 'low'; labelText = 'Atenção'; color = '#60a5fa';
+                }
+
+                return `
+                    <div class="horseman">
+                        <div class="horseman-name">${h.name}</div>
+                        <div class="horseman-count" style="color: ${color}">${h.count}</div>
+                        <div class="horseman-label ${labelClass}">${labelText}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPulse(pulse) {
+            if (!pulse || pulse.length === 0) {
+                return '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Dados insuficientes</div>';
+            }
+
+            const maxScore = 100;
+            return pulse.slice(-12).map(week => {
+                const height = (week.score / maxScore) * 80;
+                let bgColor = 'var(--bg-card)';
+                if (week.score >= 70) bgColor = 'var(--success)';
+                else if (week.score >= 50) bgColor = 'var(--warning)';
+                else bgColor = 'var(--danger)';
+
+                // Handle both new (weekLabel) and old (date) formats
+                let label = week.weekLabel || '';
+                if (!label && week.date) {
+                    // Parse date and format as "DD MMM"
+                    const d = new Date(week.date);
+                    label = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                }
+
+                return `
+                    <div class="pulse-week">
+                        <div class="pulse-bar ${week.hasConflict ? 'conflict' : ''}"
+                             style="height: ${height}px; background: ${bgColor}"></div>
+                        <div class="pulse-score">${week.score}</div>
+                        <div class="pulse-label">${label}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderLLMInsights(llm) {
+            let html = `
+                <div class="section-title">
+                    <span class="llm-badge">IA</span> Análise Profunda
+                </div>
+                <div class="llm-section">
+            `;
+
+            // Contempt analyses
+            if (llm.contemptAnalysis?.length) {
+                llm.contemptAnalysis.slice(0, 3).forEach(a => {
+                    if (!a.is_contempt) return;
+                    html += `
+                        <div class="llm-card">
+                            <div class="llm-card-header">
+                                <span class="llm-card-icon">🎯</span>
+                                <span class="llm-card-type">SARCASMO DETECTADO</span>
+                            </div>
+                            <div class="llm-message">"${a.message}"</div>
+                            <div class="llm-result">
+                                <span class="llm-tag negative">${a.type}</span>
+                                <span class="llm-tag neutral">${Math.round(a.confidence * 100)}% confiança</span>
+                                <span class="llm-tag ${a.severity === 'severe' ? 'negative' : 'neutral'}">${a.severity}</span>
+                            </div>
+                            <div class="llm-reasoning">${a.reasoning}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Response quality
+            if (llm.responseQualityAnalysis?.length) {
+                llm.responseQualityAnalysis.slice(0, 2).forEach(a => {
+                    const quality = a.overall_quality;
+                    const tagClass = quality >= 70 ? 'positive' : (quality >= 40 ? 'neutral' : 'negative');
+                    html += `
+                        <div class="llm-card">
+                            <div class="llm-card-header">
+                                <span class="llm-card-icon">💬</span>
+                                <span class="llm-card-type">QUALIDADE DA RESPOSTA</span>
+                            </div>
+                            <div class="llm-message" style="font-size: 11px;">
+                                <strong>Original:</strong> "${a.original}"<br><br>
+                                <strong>Resposta:</strong> "${a.response}"
+                            </div>
+                            <div class="llm-result">
+                                <span class="llm-tag ${tagClass}">${quality}/100</span>
+                                <span class="llm-tag neutral">Entendimento: ${a.understanding}</span>
+                                <span class="llm-tag neutral">Validação: ${a.validation}</span>
+                            </div>
+                            <div class="llm-reasoning">${a.reasoning}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Repair attempts
+            if (llm.repairAnalysis?.length) {
+                llm.repairAnalysis.slice(0, 2).forEach(a => {
+                    html += `
+                        <div class="llm-card">
+                            <div class="llm-card-header">
+                                <span class="llm-card-icon">🔧</span>
+                                <span class="llm-card-type">TENTATIVA DE REPARAÇÃO</span>
+                            </div>
+                            <div class="llm-message">"${a.message}"</div>
+                            <div class="llm-result">
+                                <span class="llm-tag ${a.is_genuine ? 'positive' : 'negative'}">
+                                    ${a.is_genuine ? 'Genuína' : 'Não genuína'}
+                                </span>
+                                <span class="llm-tag neutral">${a.responsibility_level}</span>
+                                ${a.has_blame_shifting ? '<span class="llm-tag negative">Transfere culpa</span>' : ''}
+                            </div>
+                            <div class="llm-reasoning">${a.reasoning}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Cost summary
+            if (llm.costSummary) {
+                const cost = llm.costSummary.totalCost;
+                html += `
+                    <div class="llm-cost">
+                        Custo da análise: $${cost.estimatedUSD?.toFixed(4) || '0.00'} ·
+                        ${cost.inputTokens?.toLocaleString() || 0} tokens entrada ·
+                        ${cost.outputTokens?.toLocaleString() || 0} tokens saída
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function renderStrengths(insights) {
+            if (!insights.strengths?.length) {
+                return '<div class="insight-card strength"><div class="insight-body">Analisando pontos fortes...</div></div>';
+            }
+            return insights.strengths.map(s => `
+                <div class="insight-card strength">
+                    <div class="insight-header">
+                        <span class="insight-icon">💪</span>
+                        <span class="insight-title">${s.finding}</span>
+                    </div>
+                    <div class="insight-body">${s.evidence || ''}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderOpportunities(insights, alerts) {
+            let html = '';
+
+            if (insights.opportunities?.length) {
+                html += insights.opportunities.map(o => `
+                    <div class="insight-card opportunity">
+                        <div class="insight-header">
+                            <span class="insight-icon">🌱</span>
+                            <span class="insight-title">${o.finding}</span>
+                        </div>
+                        <div class="insight-body">${o.suggestion || ''}</div>
+                        ${o.impact ? `<div class="insight-antidote"><strong>Impacto:</strong> ${o.impact}</div>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // alerts come from healthScore.alerts, not insights.alerts
+            if (alerts?.length) {
+                html += alerts.map(a => `
+                    <div class="insight-card alert">
+                        <div class="insight-header">
+                            <span class="insight-icon">⚠️</span>
+                            <span class="insight-title">${a.pattern}: ${a.frequency}</span>
+                        </div>
+                        <div class="insight-body">${a.context || ''}</div>
+                        <div class="insight-antidote"><strong>Antídoto:</strong> ${a.antidote}</div>
+                    </div>
+                `).join('');
+            }
+
+            return html || '<div class="insight-card opportunity"><div class="insight-body">Nenhuma oportunidade identificada</div></div>';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+{
+  "healthScore": {
+    "overall": 59.1,
+    "label": "Estável",
+    "labelEn": "Stable",
+    "confidence": 0.95,
+    "trend": "Baseado nos últimos 30 dias",
+    "dimensions": {
+      "emotionalConnection": {
+        "score": 56.6,
+        "components": {
+          "responsiveness": {
+            "score": 56.5,
+            "insight": "Respostas poderiam ser mais elaboradas"
+          },
+          "vulnerability": {
+            "score": 30.0,
+            "insight": "Vocabulário emocional diverso",
+            "diversityCount": 6
+          },
+          "attunement": {
+            "score": 83.3,
+            "insight": "Boa atenção às necessidades do parceiro"
+          }
+        },
+        "insights": [
+          "Respostas poderiam ser mais elaboradas",
+          "Troca emocional equilibrada"
+        ]
+      },
+      "affectionCommitment": {
+        "score": 65.5,
+        "components": {
+          "expressedAffection": {
+            "score": 63.4,
+            "insight": "Expressões de afeto presentes"
+          },
+          "commitmentSignals": {
+            "score": 56.2,
+            "perWeek": 3.6,
+            "insight": "3.6 expressões de compromisso/semana"
+          },
+          "appreciation": {
+            "score": 77.0,
+            "insight": "Boa expressão de gratidão"
+          }
+        },
+        "insights": [
+          "Boa expressão de afeto e compromisso"
+        ]
+      },
+      "communicationHealth": {
+        "score": 71.6,
+        "components": {
+          "constructiveDialogue": {
+            "score": 100,
+            "criticismCount": 0,
+            "defensivenessCount": 0,
+            "insight": "Pedidos feitos de forma gentil"
+          },
+          "conflictRepair": {
+            "score": 70,
+            "count": 2,
+            "successRate": "12%",
+            "insight": "Reparações presentes"
+          },
+          "emotionalSafety": {
+            "score": 50,
+            "contemptCount": 3,
+            "stonewallingCount": 0,
+            "insight": "Desprezo presente - atenção recomendada"
+          },
+          "supportiveResponses": {
+            "score": 54.1,
+            "insight": "Suporte emocional moderado"
+          }
+        },
+        "insights": [
+          "Bons padrões de reparação"
+        ]
+      },
+      "partnershipEquity": {
+        "score": 68.0,
+        "components": {
+          "contributionBalance": {
+            "score": 84.4,
+            "messageBalance": "39/61",
+            "initiativeBalance": "47%",
+            "insight": "Participação equilibrada"
+          },
+          "coordination": {
+            "score": 67.0,
+            "completionRate": "34%",
+            "tasksTotal": 53,
+            "insight": "Coordenação moderada"
+          },
+          "emotionalReciprocity": {
+            "score": 47.2,
+            "ratio": "2.6:1",
+            "insight": "Proporção 2.6:1 (meta: 5:1)"
+          }
+        },
+        "insights": [
+          "Boa equidade na relação"
+        ]
+      }
+    },
+    "insights": {
+      "strengths": [
+        {
+          "dimension": "communicationHealth",
+          "finding": "Comunicação saudável sem padrões negativos",
+          "evidence": "Baixa presença dos Quatro Cavaleiros de Gottman"
+        }
+      ],
+      "opportunities": []
+    },
+    "alerts": [
+      {
+        "pattern": "contempt",
+        "frequency": "3 instâncias",
+        "context": "Detectado em conversas recentes",
+        "antidote": "Expressar gratidão específica diariamente"
+      },
+      {
+        "pattern": "low_positivity_ratio",
+        "frequency": "Proporção atual: 2.6:1",
+        "context": "Meta é 5:1 segundo pesquisa de Gottman",
+        "antidote": "Aumentar expressões de carinho e gratidão"
+      }
+    ]
+  },
+  "generated": "2026-01-27T21:45:00.000000",
+  "methodology": {
+    "framework": "NAVI v2.1 - Restructured Dimensions (30-Day Window)",
+    "version": "2.1",
+    "scale": "1-100",
+    "scoringWindow": "30 days",
+    "dimensionWeights": {
+      "emotional_connection": 0.30,
+      "affection_commitment": 0.25,
+      "communication_health": 0.25,
+      "partnership_equity": 0.20
+    },
+    "references": [
+      "Gottman, J. M. (1994). What Predicts Divorce?",
+      "Reis, H. T., & Shaver, P. (1988). Intimacy as an interpersonal process",
+      "Stafford, L., & Canary, D. J. (1991). Maintenance strategies"
+    ]
+  },
+  "llmAnalysis": {
+    "enabled": false,
+    "reason": "Quick generation mode - LLM analysis disabled"
+  },
+  "metadata": {
+    "totalMessages": 32279,
+    "dateRange": {
+      "start": "2018-03-27T18:49:42",
+      "end": "2025-12-16T18:29:16"
+    },
+    "participants": [
+      "Daniela Anderez",
+      "Thiago Alvarez"
+    ],
+    "generatedAt": "2026-01-27T21:45:00.000000"
+  },
+  "weeklyPulse": [
+    {
+      "weekKey": "2025-W40",
+      "weekStart": "2025-10-06",
+      "weekLabel": "06 Oct",
+      "score": 20,
+      "messages": 41,
+      "positive": 0,
+      "negative": 0,
+      "ratio": 0.0,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 0
+      }
+    },
+    {
+      "weekKey": "2025-W41",
+      "weekStart": "2025-10-13",
+      "weekLabel": "13 Oct",
+      "score": 20,
+      "messages": 40,
+      "positive": 0,
+      "negative": 0,
+      "ratio": 0.0,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 0
+      }
+    },
+    {
+      "weekKey": "2025-W42",
+      "weekStart": "2025-10-20",
+      "weekLabel": "20 Oct",
+      "score": 50,
+      "messages": 50,
+      "positive": 3,
+      "negative": 3,
+      "ratio": 1.0,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 1,
+        "defensiveness": 0,
+        "stonewalling": 2
+      }
+    },
+    {
+      "weekKey": "2025-W43",
+      "weekStart": "2025-10-27",
+      "weekLabel": "27 Oct",
+      "score": 20,
+      "messages": 62,
+      "positive": 2,
+      "negative": 5,
+      "ratio": 0.4,
+      "hasConflict": true,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 5
+      }
+    },
+    {
+      "weekKey": "2025-W44",
+      "weekStart": "2025-11-03",
+      "weekLabel": "03 Nov",
+      "score": 20,
+      "messages": 51,
+      "positive": 0,
+      "negative": 2,
+      "ratio": 0.0,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 2
+      }
+    },
+    {
+      "weekKey": "2025-W45",
+      "weekStart": "2025-11-10",
+      "weekLabel": "10 Nov",
+      "score": 20,
+      "messages": 59,
+      "positive": 2,
+      "negative": 5,
+      "ratio": 0.4,
+      "hasConflict": true,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 5
+      }
+    },
+    {
+      "weekKey": "2025-W46",
+      "weekStart": "2025-11-17",
+      "weekLabel": "17 Nov",
+      "score": 50,
+      "messages": 46,
+      "positive": 2,
+      "negative": 2,
+      "ratio": 1.0,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 1,
+        "defensiveness": 0,
+        "stonewalling": 1
+      }
+    },
+    {
+      "weekKey": "2025-W47",
+      "weekStart": "2025-11-24",
+      "weekLabel": "24 Nov",
+      "score": 66,
+      "messages": 345,
+      "positive": 18,
+      "negative": 7,
+      "ratio": 2.6,
+      "hasConflict": true,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 2,
+        "defensiveness": 1,
+        "stonewalling": 4
+      }
+    },
+    {
+      "weekKey": "2025-W48",
+      "weekStart": "2025-12-01",
+      "weekLabel": "01 Dec",
+      "score": 85,
+      "messages": 139,
+      "positive": 5,
+      "negative": 0,
+      "ratio": 5.0,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 0
+      }
+    },
+    {
+      "weekKey": "2025-W49",
+      "weekStart": "2025-12-08",
+      "weekLabel": "08 Dec",
+      "score": 68,
+      "messages": 250,
+      "positive": 11,
+      "negative": 4,
+      "ratio": 2.8,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 1,
+        "defensiveness": 0,
+        "stonewalling": 3
+      }
+    },
+    {
+      "weekKey": "2025-W50",
+      "weekStart": "2025-12-15",
+      "weekLabel": "15 Dec",
+      "score": 85,
+      "messages": 122,
+      "positive": 5,
+      "negative": 0,
+      "ratio": 5.0,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 0
+      }
+    },
+    {
+      "weekKey": "2025-W51",
+      "weekStart": "2025-12-22",
+      "weekLabel": "22 Dec",
+      "score": 60,
+      "messages": 56,
+      "positive": 2,
+      "negative": 1,
+      "ratio": 2.0,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 1
+      }
+    }
+  ],
+  "messageVolume": {
+    "Daniela Anderez": 15939,
+    "Thiago Alvarez": 16340
+  }
+}
