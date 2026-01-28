@@ -1513,7 +1513,7 @@ class ScientificHealthScorer:
         alerts = self._compile_alerts(recent)
 
         return HealthScoreResult(
-            overall=round(weighted_overall, 1),
+            overall=round(overall_score, 1),
             label=label_pt,
             label_en=label_en,
             confidence=round(confidence, 2),
