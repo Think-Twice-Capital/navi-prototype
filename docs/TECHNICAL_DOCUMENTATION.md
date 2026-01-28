@@ -1,8 +1,16 @@
-# NAVI - Technical Documentation (v2.1)
+# NAVI - Technical Documentation (v2.2)
 
 > Relationship Health Analyzer based on validated academic research
 
 ## Version History
+
+### v2.2 Changes (2026-01-28)
+- **Full LLM Analysis**: All four dimensions now use LLM (Claude Sonnet) for pattern detection
+- **LLM Weekly Pulse**: Historical chart uses LLM analysis for each week's positive patterns
+- **Interactive Detail Views**: Clickable dimension cards and Four Horsemen with modal detail views
+- **Example Messages**: Each dimension and horseman shows real conversation examples
+- **False Positive Filtering**: Filters forwarded messages, quotes, and messages about third parties
+- **Positive/Negative Labels**: Examples are clearly labeled as positive or negative patterns
 
 ### v2.1 Changes
 - **Temporal Scoring**: Now uses only the last 30 days for scoring
@@ -465,28 +473,84 @@ class HealthScoreResult:
 
 ---
 
-### 2.4 LLM Analyzer (`whatsapp_analyzer/llm_analyzer.py`)
+### 2.4 LLM Analyzer (`whatsapp_analyzer/llm_analyzer.py` + `generate_health_data_quick.py`)
 
-**Purpose:** Enhance pattern detection with Claude Opus 4.5 for nuanced analysis.
+**Purpose:** Full LLM-based pattern detection for accurate relationship analysis.
 
-#### 2.4.1 Integration Architecture
+#### 2.4.1 Integration Architecture (v2.2)
+
+The v2.2 system uses LLM for ALL pattern detection, not just validation:
 
 ```python
-class LLMRelationshipAnalyzer:
-    def __init__(
-        self,
-        model: str = "claude-opus-4-5-20251101",  # Maximum quality
-        analyze_all: bool = True                    # Baseline mode
-    ):
-        self.client = anthropic.Anthropic()
-        self.cost_tracker = CostTracker()
+# In generate_health_data_quick.py
+import anthropic
+client = anthropic.Anthropic()  # Uses ANTHROPIC_API_KEY from .env
+
+# LLM analyzes sample messages for each dimension
+response = client.messages.create(
+    model="claude-sonnet-4-20250514",  # Fast and accurate
+    max_tokens=1500,
+    messages=[{"role": "user", "content": prompt}]
+)
 ```
 
-#### 2.4.2 Analysis Types
+#### 2.4.2 LLM Analysis Coverage (v2.2)
+
+| Dimension | LLM Analysis | Patterns Detected |
+|-----------|--------------|-------------------|
+| **Emotional Connection** | ✓ Full | Vulnerability, Attunement, Responsiveness |
+| **Affection & Commitment** | ✓ Full | Affection, Commitment, Appreciation |
+| **Communication Health** | ✓ Validation | Four Horsemen (filters false positives) |
+| **Partnership Equity** | ✓ Full | Shared Decisions, Coordination, Reciprocity |
+| **Weekly Pulse** | ✓ Full | Positive patterns per week |
+
+#### 2.4.3 Sample LLM Prompts (v2.2)
+
+**Emotional Connection Analysis:**
+```python
+prompt = """Analyze these WhatsApp messages and count instances of:
+1. VULNERABILITY: Sharing fears, insecurities, emotional struggles
+2. ATTUNEMENT: Noticing partner's emotional state, checking in
+3. RESPONSIVENESS: Engaged responses to emotional bids
+
+Messages: {messages_text}
+
+Respond in JSON: {vulnerability_count, attunement_count, responsiveness_count, ...}"""
+```
+
+**Partnership Equity Analysis:**
+```python
+prompt = """Analyze these WhatsApp messages and count instances of:
+1. SHARED_DECISIONS: Joint decision-making, "o que você acha?"
+2. COORDINATION: Coordinating schedules, dividing tasks
+3. EMOTIONAL_RECIPROCITY: Both partners initiating emotional conversations
+
+Messages: {messages_text}
+
+Respond in JSON: {shared_decisions_count, coordination_count, emotional_reciprocity_score, ...}"""
+```
+
+#### 2.4.4 False Positive Filtering
+
+Before LLM analysis, messages are filtered to exclude:
+
+```python
+def is_forwarded_or_quote(message_text: str) -> bool:
+    """Filter out messages that aren't direct couple communication."""
+    # Filters:
+    # - WhatsApp forward markers (‎image omitted, etc.)
+    # - Embedded timestamps (forwarded messages)
+    # - Greeting patterns (Fala [Name]...)
+    # - Forward indicators (encaminhei, fwd:)
+    # - Third-party quotes (ele disse, ela falou)
+    # - Messages about third parties (meu filho disse, teu filho)
+```
+
+#### 2.4.5 Legacy Analysis Types (still used for validation)
 
 | Type | Purpose | When Used |
 |------|---------|-----------|
-| **Contempt Detection** | Catch sarcasm/subtle contempt | Always (most impactful) |
+| **Contempt Detection** | Catch sarcasm/subtle contempt | Four Horsemen validation |
 | **Response Quality** | Assess empathy beyond word count | Emotional responses |
 | **Repair Validation** | Distinguish genuine vs blame-shifting | Apologies |
 | **Vulnerability Depth** | Score emotional disclosure quality | Emotional messages |
@@ -654,112 +718,189 @@ print(f"Positive ratio: {summary.positive_ratio}")
 print(f"Four Horsemen: {summary.four_horsemen_counts}")
 ```
 
-### 3.2 JSON Output Schema (v2.0)
+### 3.2 JSON Output Schema (v2.2)
 
 ```json
 {
   "healthScore": {
-    "overall": 72.5,
-    "label": "Saudável",
-    "labelEn": "Healthy",
+    "overall": 86.3,
+    "label": "Excelente",
+    "labelEn": "Excellent",
     "confidence": 0.85,
     "trend": "+5 vs mês anterior",
 
     "dimensions": {
       "emotionalConnection": {
-        "score": 75.0,
+        "score": 100.0,
+        "llmAnalysisNotes": "Strong emotional connection with frequent vulnerability sharing",
         "components": {
-          "responsiveness": {"score": 80, "insight": "..."},
-          "vulnerability": {"score": 65, "insight": "..."},
-          "attunement": {"score": 78, "insight": "..."}
+          "responsiveness": {
+            "score": 100,
+            "perWeek": 10.5,
+            "count": 45,
+            "insight": "Altamente responsivo",
+            "llmValidated": true,
+            "examples": ["Como você está se sentindo?", "Me conta mais..."]
+          },
+          "vulnerability": {
+            "score": 100,
+            "perWeek": 6.3,
+            "count": 27,
+            "insight": "Alta abertura emocional",
+            "llmValidated": true,
+            "examples": ["Estou com medo de...", "Preciso de você"]
+          },
+          "attunement": {
+            "score": 100,
+            "perWeek": 8.4,
+            "count": 36,
+            "insight": "Alta sintonia emocional",
+            "llmValidated": true,
+            "examples": ["Percebi que você está triste", "Sei que está difícil"]
+          }
         },
-        "insights": ["Boa responsividade"]
+        "examples": {
+          "vulnerability": [
+            {"text": "Estou preocupado com...", "sender": "Person A", "type": "positive"}
+          ],
+          "support": [
+            {"text": "Estou aqui pra você", "sender": "Person B", "type": "positive"}
+          ]
+        }
       },
       "affectionCommitment": {
-        "score": 70.0,
+        "score": 76.2,
+        "llmAnalysisNotes": "Regular affection with strong commitment signals",
         "components": {
-          "expressedAffection": {"score": 75, "perWeek": 12},
-          "commitmentSignals": {"score": 68, "perWeek": 5},
-          "appreciation": {"score": 65, "insight": "..."}
+          "expressedAffection": {
+            "score": 82.5,
+            "perWeek": 8.4,
+            "count": 36,
+            "insight": "Afeto presente regularmente",
+            "llmValidated": true,
+            "examples": ["Te amo", "Saudade ❤️"]
+          },
+          "commitmentSignals": {
+            "score": 70.0,
+            "perWeek": 6.3,
+            "count": 27,
+            "insight": "Compromisso demonstrado regularmente",
+            "llmValidated": true,
+            "examples": ["Vamos fazer juntos", "Nosso futuro"]
+          },
+          "appreciation": {
+            "score": 76.0,
+            "perWeek": 4.2,
+            "count": 18,
+            "insight": "Apreciação presente regularmente",
+            "llmValidated": true,
+            "examples": ["Obrigado por...", "Valeu!"]
+          }
         }
       },
       "communicationHealth": {
-        "score": 82.0,
+        "score": 75.9,
         "components": {
-          "constructiveDialogue": {"score": 85, "criticismCount": 2},
+          "constructiveDialogue": {
+            "score": 100,
+            "criticismCount": 0,
+            "defensivenessCount": 0,
+            "insight": "Diálogo construtivo e respeitoso",
+            "criticismExamples": [],
+            "defensivenessExamples": []
+          },
           "conflictRepair": {"score": 78, "successRate": "75%"},
-          "emotionalSafety": {"score": 90, "contemptCount": 0},
+          "emotionalSafety": {
+            "score": 100,
+            "contemptCount": 0,
+            "stonewallingCount": 0,
+            "insight": "Ambiente emocionalmente seguro",
+            "contemptExamples": [],
+            "stonewallingExamples": []
+          },
           "supportiveResponses": {"score": 72, "rate": "3.5%"}
         }
       },
       "partnershipEquity": {
-        "score": 68.0,
+        "score": 91.3,
+        "llmAnalysisNotes": "Excellent coordination with balanced decision-making",
         "components": {
-          "contributionBalance": {"score": 72, "taskBalance": "45%"},
-          "coordination": {"score": 65, "insight": "..."},
-          "emotionalReciprocity": {"score": 70, "ratio": "4.2:1"}
+          "contributionBalance": {
+            "score": 85.0,
+            "perWeek": 4.5,
+            "count": 27,
+            "insight": "Contribuições bem equilibradas",
+            "llmValidated": true
+          },
+          "coordination": {
+            "score": 100,
+            "perWeek": 10.5,
+            "count": 45,
+            "insight": "Excelente coordenação",
+            "llmValidated": true
+          },
+          "emotionalReciprocity": {
+            "score": 75,
+            "insight": "Both partners initiate emotional conversations equally",
+            "llmValidated": true
+          },
+          "sharedDecisions": {
+            "score": 85.0,
+            "perWeek": 6.3,
+            "count": 27,
+            "insight": "Decisões tomadas em conjunto",
+            "llmValidated": true
+          }
         }
       }
-    },
-
-    "insights": {
-      "strengths": [
-        {
-          "dimension": "emotionalConnection",
-          "finding": "Boa conexão emocional",
-          "evidence": "Pontuação alta em responsividade"
-        }
-      ],
-      "opportunities": [
-        {
-          "dimension": "communicationHealth",
-          "finding": "Desprezo detectado",
-          "suggestion": "Expressar gratidão diária",
-          "impact": "Crítico"
-        }
-      ]
-    },
-
-    "alerts": [
-      {
-        "pattern": "contempt",
-        "frequency": "3 instâncias",
-        "context": "Conversas recentes",
-        "antidote": "Expressar gratidão específica"
-      }
-    ]
+    }
   },
 
+  "weeklyPulse": [
+    {
+      "weekKey": "2025-W50",
+      "weekStart": "2025-12-08",
+      "weekLabel": "08 Dec",
+      "score": 80,
+      "messages": 250,
+      "positive": 25,
+      "negative": 0,
+      "ratio": 25.0,
+      "positiveRate": 10.0,
+      "hasConflict": false,
+      "horsemen": {"criticism": 0, "contempt": 0, "defensiveness": 0, "stonewalling": 0},
+      "llmAnalyzed": true
+    }
+  ],
+
   "methodology": {
-    "framework": "NAVI v2.1 - Restructured Dimensions (30-Day Window)",
-    "version": "2.1",
+    "framework": "NAVI v2.2 - LLM-Analyzed Dimensions (30-Day Window)",
+    "version": "2.2",
     "scale": "1-100",
     "scoringWindow": "30 days",
+    "analysisMethod": "LLM (Claude Sonnet) for all dimensions",
     "dimensionWeights": {
       "emotional_connection": 0.30,
       "affection_commitment": 0.25,
       "communication_health": 0.25,
       "partnership_equity": 0.20
-    },
-    "dimensionStructure": {
-      "emotionalConnection": ["responsiveness", "vulnerability", "attunement"],
-      "affectionCommitment": ["expressedAffection", "commitmentSignals", "appreciation"],
-      "communicationHealth": ["constructiveDialogue", "conflictRepair", "emotionalSafety", "supportiveResponses"],
-      "partnershipEquity": ["contributionBalance", "coordination", "emotionalReciprocity"]
-    },
-    "references": ["Gottman (1994)", "Reis & Shaver (1988)", "..."]
+    }
   },
 
   "llmAnalysis": {
     "enabled": true,
-    "model": "claude-opus-4-5-20251101",
-    "totalCost": {"inputTokens": 12500, "estimatedUSD": 0.43}
+    "model": "claude-sonnet-4-20250514",
+    "validations": [
+      {"category": "contempt", "text": "...", "isValid": false}
+    ],
+    "costSummary": {...}
   },
 
   "metadata": {
-    "totalMessages": 32000,
-    "dateRange": {"start": "2020-01-01", "end": "2024-12-01"},
-    "participants": ["Alice", "Bob"]
+    "totalMessages": 32279,
+    "dateRange": {"start": "2018-03-27", "end": "2025-12-16"},
+    "participants": ["Person A", "Person B"],
+    "generatedAt": "2026-01-28T..."
   }
 }
 ```

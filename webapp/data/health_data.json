@@ -1,119 +1,321 @@
 {
   "healthScore": {
-    "overall": 59.1,
-    "label": "Estável",
-    "labelEn": "Stable",
+    "overall": 86.3,
+    "label": "Excelente",
+    "labelEn": "Attention",
     "confidence": 0.95,
     "trend": "Baseado nos últimos 30 dias",
     "dimensions": {
       "emotionalConnection": {
-        "score": 56.6,
+        "score": 100.0,
         "components": {
           "responsiveness": {
-            "score": 56.5,
-            "insight": "Respostas poderiam ser mais elaboradas"
+            "score": 100,
+            "perWeek": 10.9,
+            "count": 45,
+            "insight": "Altamente responsivo",
+            "llmValidated": true,
+            "examples": []
           },
           "vulnerability": {
-            "score": 30.0,
-            "insight": "Vocabulário emocional diverso",
-            "diversityCount": 6
+            "score": 100,
+            "perWeek": 6.5,
+            "count": 27,
+            "insight": "Alta abertura emocional",
+            "llmValidated": true,
+            "examples": []
           },
           "attunement": {
-            "score": 83.3,
-            "insight": "Boa atenção às necessidades do parceiro"
+            "score": 100,
+            "perWeek": 8.7,
+            "count": 36,
+            "insight": "Alta sintonia emocional",
+            "llmValidated": true,
+            "examples": []
           }
         },
         "insights": [
-          "Respostas poderiam ser mais elaboradas",
-          "Troca emocional equilibrada"
-        ]
+          "Respostas poderiam ser mais empáticas"
+        ],
+        "llmAnalysisNotes": "This couple shows moderate emotional connection with some instances of checking in on each other's concerns and offering support. However, most communication is logistical/practical rather than deeply emotional. They do express love and gratitude, and show awareness of each other's stress around family/friend situations, but vulnerability sharing is limited to brief worry statements rather than deep emotional disclosure.",
+        "examples": {
+          "vulnerability": [],
+          "support": [
+            {
+              "text": "Será que abril é melhor pra você? Você consegue aplicar e depois decide qual batch entrar?",
+              "sender": "Daniela Anderez",
+              "timestamp": "2025-11-19T04:09:44",
+              "evidence": "Você consegue",
+              "type": "positive",
+              "llmValidated": false
+            },
+            {
+              "text": "Entendo, meu filho. Espero que tenha feito uma boa viagem.",
+              "sender": "Thiago Alvarez",
+              "timestamp": "2025-11-19T19:55:27",
+              "evidence": "Entendo",
+              "type": "positive",
+              "llmValidated": false
+            },
+            {
+              "text": "Emily disse que adoraria nos encontrar Sunday night. Será que a gente consegue trocar o standup para as 8pm e encontra com eles antes? Você consegue só verificar se tem disponibilidade?",
+              "sender": "Daniela Anderez",
+              "timestamp": "2025-11-21T10:20:48",
+              "evidence": "Você consegue",
+              "type": "positive",
+              "llmValidated": false
+            },
+            {
+              "text": "Entendo! É que ele autorizou no auge da crise então ele pode alegar que não estava em condições de fazer isso, então também entendo o outro lado",
+              "sender": "Daniela Anderez",
+              "timestamp": "2025-11-24T13:53:02",
+              "evidence": "Entendo",
+              "type": "positive",
+              "llmValidated": false
+            },
+            {
+              "text": "Que difícil!",
+              "sender": "Daniela Anderez",
+              "timestamp": "2025-11-30T21:01:09",
+              "evidence": "Que difícil",
+              "type": "positive",
+              "llmValidated": false
+            }
+          ]
+        }
       },
       "affectionCommitment": {
-        "score": 65.5,
+        "score": 76.2,
         "components": {
           "expressedAffection": {
-            "score": 63.4,
-            "insight": "Expressões de afeto presentes"
+            "score": 76.3,
+            "perWeek": 8.7,
+            "count": 36,
+            "insight": "Afeto presente regularmente",
+            "llmValidated": true,
+            "examples": [
+              "te amo!!!",
+              "Te amo. Vai dar tudo certo!",
+              "Amor, você precisa imprimir, assinar e mandar para a Josie"
+            ]
           },
           "commitmentSignals": {
-            "score": 56.2,
-            "perWeek": 3.6,
-            "insight": "3.6 expressões de compromisso/semana"
+            "score": 88.9,
+            "perWeek": 6.5,
+            "count": 27,
+            "insight": "Fortes sinais de compromisso",
+            "llmValidated": true,
+            "examples": [
+              "nosso projeto",
+              "A pessoa que está construindo essa casa viu o nosso projeto",
+              "Quero recebê-los para o soft opening do Pobre Juan de Ipanema"
+            ]
           },
           "appreciation": {
-            "score": 77.0,
-            "insight": "Boa expressão de gratidão"
+            "score": 63.4,
+            "perWeek": 4.3,
+            "count": 18,
+            "insight": "Apreciação presente regularmente",
+            "llmValidated": true,
+            "examples": [
+              "Obrigado por cuidar tão bem de mim!! Te amo muito!!",
+              "Mas obrigado por perguntar!"
+            ]
           }
         },
-        "insights": [
-          "Boa expressão de afeto e compromisso"
-        ]
+        "insights": [],
+        "llmAnalysisNotes": "The couple shows moderate positive communication with clear expressions of love and care. Thiago demonstrates appreciation for Daniela's care, and there are references to shared projects and planning together, indicating partnership in practical matters.",
+        "examples": {
+          "affection": [
+            {
+              "text": "Amor, te amo!",
+              "sender": "Thiago Alvarez",
+              "timestamp": "2025-11-17T04:07:20",
+              "evidence": "te amo",
+              "type": "positive",
+              "llmValidated": false
+            },
+            {
+              "text": "Também te amo! Boa viagem!",
+              "sender": "Daniela Anderez",
+              "timestamp": "2025-11-17T04:11:19",
+              "evidence": "te amo",
+              "type": "positive",
+              "llmValidated": false
+            },
+            {
+              "text": "Te amo!",
+              "sender": "Thiago Alvarez",
+              "timestamp": "2025-11-17T14:07:58",
+              "evidence": "Te amo",
+              "type": "positive",
+              "llmValidated": false
+            },
+            {
+              "text": "Te amo",
+              "sender": "Thiago Alvarez",
+              "timestamp": "2025-11-19T19:55:27",
+              "evidence": "Te amo",
+              "type": "positive",
+              "llmValidated": false
+            },
+            {
+              "text": "Gostei do tênis bege sim. está lindo!",
+              "sender": "Thiago Alvarez",
+              "timestamp": "2025-11-20T18:43:44",
+              "evidence": "lindo",
+              "type": "positive",
+              "llmValidated": false
+            }
+          ],
+          "appreciation": [],
+          "commitment": [
+            {
+              "text": "Amor, nós vamos pra NY juntos no domingo, já temos almoço reservado no 3* Eleven. A noite vamos ao standup.",
+              "sender": "Daniela Anderez",
+              "timestamp": "2025-11-17T04:37:16",
+              "evidence": "juntos",
+              "type": "positive",
+              "llmValidated": false
+            },
+            {
+              "text": "Amor, sobre as meninas, eu acho que não vou dizer nada pra elas por enquanto. E aí quando a gente chegar contamos juntos. Se não pode ficar muita preocupação, muita imaginação na cabeça delas.",
+              "sender": "Daniela Anderez",
+              "timestamp": "2025-11-22T05:44:05",
+              "evidence": "quando a gente",
+              "type": "positive",
+              "llmValidated": false
+            }
+          ]
+        }
       },
       "communicationHealth": {
-        "score": 71.6,
+        "score": 75.9,
         "components": {
           "constructiveDialogue": {
             "score": 100,
             "criticismCount": 0,
             "defensivenessCount": 0,
-            "insight": "Pedidos feitos de forma gentil"
+            "insight": "Diálogo construtivo e respeitoso",
+            "criticismExamples": [],
+            "defensivenessExamples": []
           },
           "conflictRepair": {
             "score": 70,
             "count": 2,
             "successRate": "12%",
-            "insight": "Reparações presentes"
+            "insight": "Reparações presentes",
+            "repairExamples": [
+              {
+                "text": "Foi mal só responder agora",
+                "sender": "Thiago Alvarez",
+                "timestamp": "2025-11-30T09:40:04",
+                "evidence": "Foi mal",
+                "type": "positive",
+                "llmValidated": false
+              },
+              {
+                "text": "Desculpa que não ouvi você ligando. Se quiser retorna aqui! 😘",
+                "sender": "Daniela Anderez",
+                "timestamp": "2025-12-07T22:09:02",
+                "evidence": "Desculpa",
+                "type": "positive",
+                "llmValidated": false
+              }
+            ]
           },
           "emotionalSafety": {
-            "score": 50,
-            "contemptCount": 3,
+            "score": 100,
+            "contemptCount": 0,
             "stonewallingCount": 0,
-            "insight": "Desprezo presente - atenção recomendada"
+            "insight": "Ambiente emocionalmente seguro",
+            "contemptExamples": [],
+            "stonewallingExamples": []
           },
           "supportiveResponses": {
-            "score": 54.1,
-            "insight": "Suporte emocional moderado"
+            "score": 33.7,
+            "rate": "1.7%",
+            "count": 12,
+            "insight": "Mais apoio e validação fortaleceriam a conexão"
           }
         },
         "insights": [
-          "Bons padrões de reparação"
+          "Bons padrões de reparação",
+          "Diálogo construtivo"
         ]
       },
       "partnershipEquity": {
-        "score": 68.0,
+        "score": 91.3,
         "components": {
           "contributionBalance": {
-            "score": 84.4,
-            "messageBalance": "39/61",
-            "initiativeBalance": "47%",
-            "insight": "Participação equilibrada"
+            "score": 90.2,
+            "perWeek": 4.3,
+            "count": 18,
+            "insight": "Contribuições bem equilibradas",
+            "llmValidated": true,
+            "examples": [
+              "Thiago: 'Obrigado por cuidar tão bem de mim!! Te amo muito!!' - acknowledging Daniela's care and contribution",
+              "Thiago asking Daniela to handle document signing while he handles other business matters - implicit division of responsibilities"
+            ]
           },
           "coordination": {
-            "score": 67.0,
-            "completionRate": "34%",
-            "tasksTotal": 53,
-            "insight": "Coordenação moderada"
+            "score": 100,
+            "perWeek": 8.7,
+            "count": 36,
+            "insight": "Excelente coordenação",
+            "llmValidated": true,
+            "examples": [
+              "Daniela: 'Já desembarcamos. Mantenho o plano de pegar o carro né?' - coordinating travel logistics",
+              "Thiago: 'Amor, você precisa imprimir, assinar e mandar para a Josie. Isso precisa ser feito urgentemente' - coordinating document handling",
+              "Daniela: 'Consegue me mandar por favor? O pessoal da Hawaiian me respondeu por e-mail' - coordinating ticket sharing for travel"
+            ]
           },
           "emotionalReciprocity": {
-            "score": 47.2,
-            "ratio": "2.6:1",
-            "insight": "Proporção 2.6:1 (meta: 5:1)"
+            "score": 75,
+            "insight": "Both partners express love and care, but Daniela initiates slightly more emotional support ('Te amo. Vai dar tudo certo!', 'te amo!!!') while Thiago shows appreciation ('Obrigado por cuidar tão bem de mim!! Te amo muito!!'). The emotional exchange is quite balanced overall.",
+            "llmValidated": true
+          },
+          "sharedDecisions": {
+            "score": 100,
+            "perWeek": 6.5,
+            "count": 27,
+            "insight": "Decisões tomadas em conjunto",
+            "llmValidated": true,
+            "examples": [
+              "Daniela: 'Vc tá preocupado com esse tema do group chatGPT? Ou ainda tá vendo como oportunidade de surfar a onda como você tinha pensado?' - seeking partner's perspective on business decision",
+              "Thiago: 'O que vc prefere? Sábado ou sexta?' - asking for partner's preference in planning",
+              "Daniela: 'Mantenho o plano de pegar o carro né?' - confirming previously discussed travel plan"
+            ]
           }
         },
         "insights": [
-          "Boa equidade na relação"
-        ]
+          "Boa equidade nas contribuições"
+        ],
+        "llmAnalysisNotes": "This couple shows strong partnership dynamics with good coordination on practical matters (travel, documents, finances) and balanced emotional support. They communicate frequently through calls and maintain awareness of each other's activities and concerns. The relationship appears collaborative with both partners contributing to decision-making and logistics."
       }
     },
     "insights": {
       "strengths": [
         {
-          "dimension": "communicationHealth",
-          "finding": "Comunicação saudável sem padrões negativos",
-          "evidence": "Baixa presença dos Quatro Cavaleiros de Gottman"
+          "dimension": "partnershipEquity",
+          "finding": "Boa equidade na parceria",
+          "evidence": "Distribuição equilibrada de responsabilidades"
         }
       ],
-      "opportunities": []
+      "opportunities": [
+        {
+          "dimension": "emotionalConnection",
+          "finding": "Qualidade de resposta pode melhorar",
+          "suggestion": "Quando parceiro compartilha sentimentos, tente fazer perguntas de acompanhamento",
+          "impact": "Alto - preditor central de intimidade"
+        },
+        {
+          "dimension": "affectionCommitment",
+          "finding": "Expressões de afeto podem aumentar",
+          "suggestion": "Expressar gratidão específica e carinho regularmente",
+          "impact": "Médio - fortalece vínculo emocional"
+        }
+      ]
     },
     "alerts": [
       {
@@ -124,23 +326,62 @@
       },
       {
         "pattern": "low_positivity_ratio",
-        "frequency": "Proporção atual: 2.6:1",
+        "frequency": "Proporção atual: 2.4:1",
         "context": "Meta é 5:1 segundo pesquisa de Gottman",
         "antidote": "Aumentar expressões de carinho e gratidão"
       }
     ]
   },
-  "generated": "2026-01-27T21:45:00.000000",
+  "generated": "2026-01-28T00:11:17.674278",
   "methodology": {
     "framework": "NAVI v2.1 - Restructured Dimensions (30-Day Window)",
     "version": "2.1",
     "scale": "1-100",
     "scoringWindow": "30 days",
     "dimensionWeights": {
-      "emotional_connection": 0.30,
+      "emotional_connection": 0.3,
       "affection_commitment": 0.25,
       "communication_health": 0.25,
-      "partnership_equity": 0.20
+      "partnership_equity": 0.2
+    },
+    "dimensionStructure": {
+      "emotionalConnection": {
+        "weight": 0.3,
+        "theory": "Interpersonal Process Model (Reis & Shaver)",
+        "components": [
+          "responsiveness",
+          "vulnerability",
+          "attunement"
+        ]
+      },
+      "affectionCommitment": {
+        "weight": 0.25,
+        "theory": "Stafford & Canary Maintenance + Gottman Fondness",
+        "components": [
+          "expressedAffection",
+          "commitmentSignals",
+          "appreciation"
+        ]
+      },
+      "communicationHealth": {
+        "weight": 0.25,
+        "theory": "Gottman Four Horsemen (inverse)",
+        "components": [
+          "constructiveDialogue",
+          "conflictRepair",
+          "emotionalSafety",
+          "supportiveResponses"
+        ]
+      },
+      "partnershipEquity": {
+        "weight": 0.2,
+        "theory": "Equity Theory + Interdependence",
+        "components": [
+          "contributionBalance",
+          "coordination",
+          "emotionalReciprocity"
+        ]
+      }
     },
     "references": [
       "Gottman, J. M. (1994). What Predicts Divorce?",
@@ -149,8 +390,28 @@
     ]
   },
   "llmAnalysis": {
-    "enabled": false,
-    "reason": "Quick generation mode - LLM analysis disabled"
+    "enabled": true,
+    "model": "claude-sonnet-4-20250514",
+    "validations": [],
+    "costSummary": {
+      "enabled": true,
+      "model": "claude-sonnet-4-20250514",
+      "analyzeAllMessages": false,
+      "totalCost": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "estimatedUSD": 0
+      },
+      "analysisBreakdown": {
+        "contemptDetections": 0,
+        "responseQualityAssessments": 0,
+        "repairValidations": 0,
+        "vulnerabilityAssessments": 0,
+        "sharedMeaningAssessments": 0
+      },
+      "costByType": {},
+      "sampleAnalyses": []
+    }
   },
   "metadata": {
     "totalMessages": 32279,
@@ -162,212 +423,236 @@
       "Daniela Anderez",
       "Thiago Alvarez"
     ],
-    "generatedAt": "2026-01-27T21:45:00.000000"
+    "generatedAt": "2026-01-28T00:11:17.675576"
   },
   "weeklyPulse": [
     {
       "weekKey": "2025-W40",
       "weekStart": "2025-10-06",
       "weekLabel": "06 Oct",
-      "score": 20,
+      "score": 64,
       "messages": 41,
-      "positive": 0,
+      "positive": 2,
       "negative": 0,
-      "ratio": 0.0,
+      "ratio": 2.0,
+      "positiveRate": 4.9,
       "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 0,
         "defensiveness": 0,
         "stonewalling": 0
-      }
+      },
+      "llmAnalyzed": true
     },
     {
       "weekKey": "2025-W41",
       "weekStart": "2025-10-13",
       "weekLabel": "13 Oct",
-      "score": 20,
+      "score": 80,
       "messages": 40,
-      "positive": 0,
+      "positive": 4,
       "negative": 0,
-      "ratio": 0.0,
+      "ratio": 4.0,
+      "positiveRate": 10.0,
       "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 0,
         "defensiveness": 0,
         "stonewalling": 0
-      }
+      },
+      "llmAnalyzed": true
     },
     {
       "weekKey": "2025-W42",
       "weekStart": "2025-10-20",
       "weekLabel": "20 Oct",
-      "score": 50,
+      "score": 95,
       "messages": 50,
-      "positive": 3,
-      "negative": 3,
-      "ratio": 1.0,
+      "positive": 13,
+      "negative": 1,
+      "ratio": 13.0,
+      "positiveRate": 26.0,
       "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 1,
         "defensiveness": 0,
-        "stonewalling": 2
-      }
+        "stonewalling": 0
+      },
+      "llmAnalyzed": true
     },
     {
       "weekKey": "2025-W43",
       "weekStart": "2025-10-27",
       "weekLabel": "27 Oct",
-      "score": 20,
+      "score": 86,
       "messages": 62,
-      "positive": 2,
-      "negative": 5,
-      "ratio": 0.4,
-      "hasConflict": true,
+      "positive": 8,
+      "negative": 0,
+      "ratio": 8.0,
+      "positiveRate": 12.9,
+      "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 0,
         "defensiveness": 0,
-        "stonewalling": 5
-      }
+        "stonewalling": 0
+      },
+      "llmAnalyzed": true
     },
     {
       "weekKey": "2025-W44",
       "weekStart": "2025-11-03",
       "weekLabel": "03 Nov",
-      "score": 20,
+      "score": 79,
       "messages": 51,
-      "positive": 0,
-      "negative": 2,
-      "ratio": 0.0,
+      "positive": 5,
+      "negative": 0,
+      "ratio": 5.0,
+      "positiveRate": 9.8,
       "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 0,
         "defensiveness": 0,
-        "stonewalling": 2
-      }
+        "stonewalling": 0
+      },
+      "llmAnalyzed": true
     },
     {
       "weekKey": "2025-W45",
       "weekStart": "2025-11-10",
       "weekLabel": "10 Nov",
-      "score": 20,
+      "score": 100,
       "messages": 59,
-      "positive": 2,
-      "negative": 5,
-      "ratio": 0.4,
-      "hasConflict": true,
+      "positive": 15,
+      "negative": 0,
+      "ratio": 15.0,
+      "positiveRate": 25.4,
+      "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 0,
         "defensiveness": 0,
-        "stonewalling": 5
-      }
+        "stonewalling": 0
+      },
+      "llmAnalyzed": true
     },
     {
       "weekKey": "2025-W46",
       "weekStart": "2025-11-17",
       "weekLabel": "17 Nov",
-      "score": 50,
+      "score": 46,
       "messages": 46,
-      "positive": 2,
-      "negative": 2,
+      "positive": 1,
+      "negative": 1,
       "ratio": 1.0,
+      "positiveRate": 2.2,
       "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 1,
         "defensiveness": 0,
-        "stonewalling": 1
-      }
+        "stonewalling": 0
+      },
+      "llmAnalyzed": true
     },
     {
       "weekKey": "2025-W47",
       "weekStart": "2025-11-24",
       "weekLabel": "24 Nov",
-      "score": 66,
+      "score": 56,
       "messages": 345,
-      "positive": 18,
-      "negative": 7,
-      "ratio": 2.6,
-      "hasConflict": true,
+      "positive": 11,
+      "negative": 0,
+      "ratio": 11.0,
+      "positiveRate": 3.2,
+      "hasConflict": false,
       "horsemen": {
         "criticism": 0,
-        "contempt": 2,
-        "defensiveness": 1,
-        "stonewalling": 4
-      }
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 0
+      },
+      "llmAnalyzed": true
     },
     {
       "weekKey": "2025-W48",
       "weekStart": "2025-12-01",
       "weekLabel": "01 Dec",
-      "score": 85,
+      "score": 30,
       "messages": 139,
-      "positive": 5,
+      "positive": 0,
       "negative": 0,
-      "ratio": 5.0,
+      "ratio": 0.0,
+      "positiveRate": 0.0,
       "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 0,
         "defensiveness": 0,
         "stonewalling": 0
-      }
+      },
+      "llmAnalyzed": true
     },
     {
       "weekKey": "2025-W49",
       "weekStart": "2025-12-08",
       "weekLabel": "08 Dec",
-      "score": 68,
+      "score": 80,
       "messages": 250,
-      "positive": 11,
-      "negative": 4,
-      "ratio": 2.8,
-      "hasConflict": false,
-      "horsemen": {
-        "criticism": 0,
-        "contempt": 1,
-        "defensiveness": 0,
-        "stonewalling": 3
-      }
-    },
-    {
-      "weekKey": "2025-W50",
-      "weekStart": "2025-12-15",
-      "weekLabel": "15 Dec",
-      "score": 85,
-      "messages": 122,
-      "positive": 5,
+      "positive": 25,
       "negative": 0,
-      "ratio": 5.0,
+      "ratio": 25.0,
+      "positiveRate": 10.0,
       "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 0,
         "defensiveness": 0,
         "stonewalling": 0
-      }
+      },
+      "llmAnalyzed": true
     },
     {
-      "weekKey": "2025-W51",
-      "weekStart": "2025-12-22",
-      "weekLabel": "22 Dec",
-      "score": 60,
-      "messages": 56,
-      "positive": 2,
-      "negative": 1,
-      "ratio": 2.0,
+      "weekKey": "2025-W50",
+      "weekStart": "2025-12-15",
+      "weekLabel": "15 Dec",
+      "score": 100,
+      "messages": 122,
+      "positive": 28,
+      "negative": 0,
+      "ratio": 28.0,
+      "positiveRate": 23.0,
       "hasConflict": false,
       "horsemen": {
         "criticism": 0,
         "contempt": 0,
         "defensiveness": 0,
-        "stonewalling": 1
-      }
+        "stonewalling": 0
+      },
+      "llmAnalyzed": true
+    },
+    {
+      "weekKey": "2025-W51",
+      "weekStart": "2025-12-22",
+      "weekLabel": "22 Dec",
+      "score": 77,
+      "messages": 56,
+      "positive": 5,
+      "negative": 0,
+      "ratio": 5.0,
+      "positiveRate": 8.9,
+      "hasConflict": false,
+      "horsemen": {
+        "criticism": 0,
+        "contempt": 0,
+        "defensiveness": 0,
+        "stonewalling": 0
+      },
+      "llmAnalyzed": true
     }
   ],
   "messageVolume": {

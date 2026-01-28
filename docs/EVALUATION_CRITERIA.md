@@ -1,8 +1,8 @@
-# Como o NAVI Avalia Seu Relacionamento (v2.1)
+# Como o NAVI Avalia Seu Relacionamento (v2.2)
 
 > Um guia completo sobre os critérios de avaliação da saúde do seu relacionamento
 
-**Versão 2.1** - Reestruturação das 4 dimensões com janela de 30 dias para avaliação mais responsiva.
+**Versão 2.2** - Análise completa por IA (LLM) para todas as dimensões, com exemplos de conversas e visualizações interativas.
 
 ---
 
@@ -68,13 +68,17 @@ Se você trabalhar em melhorar a comunicação hoje, verá a mudança na pontua�
 
 ---
 
-## As 4 Dimensões Avaliadas (v2.1)
+## As 4 Dimensões Avaliadas (v2.2)
 
-### 1. Conexão Emocional (30%)
+> **Novidade v2.2:** Todas as dimensões agora são analisadas por IA (LLM), que entende nuances de linguagem muito melhor que palavras-chave simples.
+
+### 1. Conexão Emocional (30%) 🤖 *Análise por IA*
 
 **O que significa:** Quão bem vocês se entendem e respondem um ao outro quando compartilham emoções e experiências.
 
 Esta dimensão é baseada no conceito de **responsividade** - a sensação de que seu parceiro realmente te ouve, te entende e se importa com você.
+
+**Como a IA analisa:** A IA lê amostras das suas conversas e identifica momentos de vulnerabilidade, sintonia emocional e responsividade - mesmo quando não usam palavras específicas como "te amo" ou "sinto".
 
 #### Componentes Avaliados:
 
@@ -103,11 +107,13 @@ Esta dimensão é baseada no conceito de **responsividade** - a sensação de qu
 
 ---
 
-### 2. Afeto e Compromisso (25%)
+### 2. Afeto e Compromisso (25%) 🤖 *Análise por IA*
 
 **O que significa:** Expressões regulares de carinho, amor e compromisso com o relacionamento.
 
 Esta dimensão avalia se vocês estão "regando a planta" do relacionamento regularmente.
+
+**Como a IA analisa:** A IA identifica expressões de afeto, sinais de compromisso com o futuro, e momentos de apreciação mútua - mesmo em formas sutis como planejamento conjunto ou cuidado com detalhes.
 
 #### Componentes Avaliados:
 
@@ -128,11 +134,13 @@ Esta dimensão avalia se vocês estão "regando a planta" do relacionamento regu
 
 ---
 
-### 3. Saúde da Comunicação (25%)
+### 3. Saúde da Comunicação (25%) 🤖 *Validação por IA*
 
 **O que significa:** Como vocês lidam com diferenças, desentendimentos e conflitos.
 
 Esta é talvez a dimensão mais importante para prever a longevidade do relacionamento. Baseada diretamente na pesquisa de Gottman sobre os "Quatro Cavaleiros do Apocalipse".
+
+**Como a IA analisa:** A IA valida cada padrão negativo (crítica, desprezo, defensividade, evasão) para filtrar falsos positivos. Por exemplo, um "ok" como resposta simples não é contado como evasão - apenas respostas verdadeiramente evasivas como "tanto faz" ou "faz o que quiser".
 
 #### Componentes Avaliados:
 
@@ -163,11 +171,13 @@ Esta é talvez a dimensão mais importante para prever a longevidade do relacion
 
 ---
 
-### 4. Equidade na Parceria (20%)
+### 4. Equidade na Parceria (20%) 🤖 *Análise por IA*
 
 **O que significa:** Equilíbrio e colaboração no dia-a-dia do casal.
 
 Relacionamentos funcionam melhor quando ambos se sentem parceiros iguais.
+
+**Como a IA analisa:** A IA identifica decisões tomadas em conjunto, coordenação de tarefas, e reciprocidade emocional - quem inicia conversas emocionais e se há equilíbrio na troca.
 
 #### Componentes Avaliados:
 
@@ -340,27 +350,44 @@ A pontuação reflete os padrões de comunicação encontrados nas suas conversa
 
 ### "O sistema considera contexto?"
 
-O NAVI analisa padrões de texto. Ele pode identificar:
-- Frases e expressões típicas de cada padrão
-- Emojis e seus usos (❤️ vs 🙄)
-- Estrutura de respostas (curtas vs elaboradas)
+**Sim, agora com IA!** A versão 2.2 usa análise por LLM (Inteligência Artificial) para entender o contexto das mensagens:
 
-Ele **não pode** identificar:
-- Tom de voz ou intenção
-- Contexto que não está no texto
-- Piadas internas do casal
+O NAVI agora pode identificar:
+- **Nuances de linguagem** - A IA entende diferenças sutis como sarcasmo vs elogio genuíno
+- **Contexto emocional** - Reconhece quando mensagens expressam vulnerabilidade real
+- **Padrões de relacionamento** - Identifica coordenação, apoio mútuo, e decisões conjuntas
+- **Filtragem inteligente** - Remove automaticamente mensagens encaminhadas, citações de terceiros
 
-Por isso, sempre interprete os resultados como um ponto de partida para reflexão, não como verdade absoluta.
+Ele ainda **não pode** identificar:
+- Tom de voz ou expressão facial
+- Histórico completo de cada conflito
+- Piadas internas muito específicas do casal
 
 ### "A análise é 100% precisa?"
 
-Nenhuma análise automatizada é perfeita. O NAVI identifica padrões com base em pesquisa validada, mas:
+A versão 2.2 com LLM é significativamente mais precisa que versões anteriores baseadas apenas em palavras-chave:
 
-- Algumas expressões podem ser sarcásticas de forma não detectável
-- Contextos únicos do seu relacionamento não são considerados
-- A qualidade da análise depende da quantidade de dados
+**Melhorias da v2.2:**
+- ✅ Detecta afeto mesmo sem "te amo" explícito
+- ✅ Reconhece compromisso em planejamentos conjuntos
+- ✅ Filtra falsos positivos (mensagens sobre filhos, amigos, etc.)
+- ✅ Valida cada padrão negativo antes de contar
 
-Use os resultados como ferramenta de reflexão, não como diagnóstico definitivo.
+**Limitações:**
+- Análise baseada em texto (não voz/vídeo)
+- Amostragem de ~100 mensagens por período
+- Contextos muito específicos podem não ser capturados
+
+Use os resultados como ferramenta de reflexão e base para conversas, não como diagnóstico definitivo.
+
+### "Posso ver exemplos das mensagens analisadas?"
+
+**Sim!** Na versão 2.2, você pode clicar em cada dimensão ou Cavaleiro para ver:
+- Exemplos reais de mensagens detectadas
+- Se cada exemplo é positivo ou negativo
+- Notas da IA sobre os padrões encontrados
+
+Isso ajuda a entender exatamente o que está sendo analisado e verificar se a análise faz sentido para seu contexto.
 
 ---
 

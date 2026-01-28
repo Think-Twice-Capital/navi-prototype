@@ -313,15 +313,23 @@ The health score provides an overall relationship health metric from 0-100 based
   },
 
   "methodology": {
-    "framework": "NAVI v2.1 - Restructured Dimensions (30-Day Window)",
-    "version": "2.1",
+    "framework": "NAVI v2.2 - LLM-Analyzed Dimensions (30-Day Window)",
+    "version": "2.2",
     "scale": "1-100",
     "scoringWindow": "30 days",
+    "analysisMethod": "LLM (Claude Sonnet) for pattern detection",
     "dimensionWeights": {
       "emotional_connection": 0.30,
       "affection_commitment": 0.25,
       "communication_health": 0.25,
       "partnership_equity": 0.20
+    },
+    "llmCoverage": {
+      "emotionalConnection": "Full LLM analysis",
+      "affectionCommitment": "Full LLM analysis",
+      "communicationHealth": "LLM validation of Four Horsemen",
+      "partnershipEquity": "Full LLM analysis",
+      "weeklyPulse": "LLM analysis per week"
     }
   }
 }
@@ -378,17 +386,34 @@ The health score provides an overall relationship health metric from 0-100 based
 | **Coordination** | 30% | Logistical efficiency | Task completion rate, decision speed |
 | **Shared Meaning** | 30% | Joint goals and values | Future planning, shared references |
 
-### 2.3 Temporal Weighting
+### 2.3 Analysis Method (v2.2)
 
-Instead of fixed baselines, we use temporal weighting:
+**LLM-Based Pattern Detection:**
 
-| Period | Weight | Purpose |
-|--------|--------|---------|
-| Recent (30 days) | 50% | Capture current state |
-| Medium-term (90 days) | 30% | Identify trends |
-| Long-term (all history) | 20% | Establish baseline patterns |
+All dimensions now use LLM (Claude Sonnet) for pattern detection instead of regex:
 
-This reduces noise from daily fluctuations while acknowledging trends.
+| Dimension | Analysis Method | Patterns Detected |
+|-----------|-----------------|-------------------|
+| Emotional Connection | LLM Full | Vulnerability, Attunement, Responsiveness |
+| Affection & Commitment | LLM Full | Affection, Commitment, Appreciation |
+| Communication Health | LLM Validation | Four Horsemen (filters false positives) |
+| Partnership Equity | LLM Full | Shared Decisions, Coordination, Reciprocity |
+
+**False Positive Filtering:**
+
+Before LLM analysis, messages are filtered to exclude:
+- Forwarded messages (WhatsApp markers)
+- Quoted messages from third parties
+- Messages about third parties (children, friends)
+- Embedded timestamps (forwards)
+
+**Scoring Window:**
+
+Only the last 30 days are used for scoring, ensuring fast responsiveness to behavioral changes.
+
+**Weekly Pulse:**
+
+Each week in the historical chart is analyzed by LLM to detect positive patterns accurately.
 
 ### 2.2 Balance Metrics Schema
 
@@ -1320,6 +1345,11 @@ Example: 7.5/10 ≈ 75/100
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.2 | 2026-01-28 | Full LLM analysis for all four dimensions |
+| 2.2 | 2026-01-28 | LLM-analyzed weekly pulse for historical chart |
+| 2.2 | 2026-01-28 | Interactive modal detail views with example conversations |
+| 2.2 | 2026-01-28 | False positive filtering (forwards, quotes, third parties) |
+| 2.2 | 2026-01-28 | Positive/negative labels on example messages |
 | 2.1 | 2026-01-27 | 30-day only scoring window for faster score responsiveness |
 | 2.1 | 2026-01-27 | Removed multi-period temporal weighting |
 | 2.0 | 2026-01-26 | Restructured 4-dimension model to eliminate pattern overlaps |
